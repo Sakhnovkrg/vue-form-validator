@@ -1,0 +1,167 @@
+{
+  "title": "Vue Form Validator",
+  "subtitle": "Form validation library capabilities demonstration",
+  "forms": {
+    "original": "Basic Form",
+    "originalDesc": "Async validation, cross-field rules, and form state management",
+    "date": "Date Handling",
+    "dateDesc": "Date validation, duration calculation, and cross-field rules",
+    "array": "Dynamic Arrays",
+    "arrayDesc": "Array objects validation and dynamic form fields",
+    "nested": "Nested Objects",
+    "nestedDesc": "Nested object validation with helper methods",
+    "presetshare": "Complex Business Logic",
+    "presetshareDesc": "Conditional file validation, field dependencies and custom rules",
+    "file": "File Upload",
+    "fileDesc": "Multi-file validation, size and type constraints"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Enter a valid email",
+    "minLength": "Minimum {count} characters",
+    "maxLength": "Maximum {count} characters",
+    "numeric": "Only numbers allowed",
+    "sameAs": "Passwords must match",
+    "dateAfter": "Date must be after {field}",
+    "requiredIf": "This field is required",
+    "fileRequired": "Please select a file",
+    "fileSize": "Maximum file size {size}MB",
+    "fileType": "Allowed types: {types}",
+    "fileCount": "File count: {min} to {max}",
+    "image": "Please select a valid image",
+    "arrayMinLength": "Minimum {count} items",
+    "arrayRequired": "Please select at least one item",
+    "remote": "This value is already taken",
+    "checking": "Checking",
+    "companyNameRequired": "Company name is required for corporate accounts",
+    "zipCodeFormat": "ZIP code must be 5 digits",
+    "websiteFormat": "Website must start with http:// or https://",
+    "presetNameRequired": "Preset name is required",
+    "synthesizerRequired": "Please select a synthesizer",
+    "tagRequired": "Please select at least one tag",
+    "presetFileRequired": "Preset file is required",
+    "invalidFileFormat": "Invalid file format for selected synthesizer",
+    "usernameFormat": "Username can only contain letters, numbers and underscores",
+    "passwordStrength": "Password must contain at least one uppercase letter, one lowercase letter and one number",
+    "companyNameMaxLength": "Company name cannot exceed 100 characters"
+  },
+  "fields": {
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "username": "Username",
+    "message": "Message",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "avatar": "Avatar",
+    "documents": "Documents",
+    "teamName": "Team Name",
+    "eventName": "Event Name",
+    "category": "Category",
+    "description": "Description",
+    "projectName": "Project Name",
+    "projectFiles": "Project Files",
+    "coverImage": "Cover Image",
+    "address": "Address",
+    "street": "Street",
+    "city": "City",
+    "zipCode": "ZIP Code",
+    "profile": "Profile",
+    "bio": "Bio",
+    "website": "Website",
+    "accountType": "Account Type",
+    "companyName": "Company Name",
+    "presetName": "Preset Name",
+    "synthesizer": "Synthesizer",
+    "tags": "Tags",
+    "presetFile": "Preset File"
+  },
+  "buttons": {
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "clear": "Clear",
+    "add": "Add",
+    "remove": "Remove",
+    "addContact": "Add Contact",
+    "submitPreset": "Submit Preset"
+  },
+  "placeholders": {
+    "enterName": "Enter your name",
+    "enterEmail": "example@email.com",
+    "enterPassword": "Enter password",
+    "confirmPassword": "Repeat password",
+    "enterUsername": "admin",
+    "enterMessage": "Your message...",
+    "enterTeamName": "Enter team name",
+    "contactName": "Contact name",
+    "contactEmail": "email@example.com",
+    "selectRole": "Select role",
+    "selectCategory": "Select category",
+    "selectAccountType": "Select account type",
+    "selectSynthesizer": "Select synthesizer",
+    "firstSelectSynth": "First select a synthesizer"
+  },
+  "contact": {
+    "title": "Team Contacts",
+    "item": "Contact {number}",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "roles": {
+      "developer": "Developer",
+      "designer": "Designer",
+      "manager": "Manager"
+    }
+  },
+  "file": {
+    "selected": "Selected file: {name}",
+    "selectedCount": "Selected files: {count}",
+    "noFiles": "No files selected",
+    "clearAll": "Clear all",
+    "remove": "Remove"
+  },
+  "footer": {
+    "viewSource": "View source on GitHub"
+  },
+  "event": {
+    "duration": "Duration",
+    "day": "day",
+    "days": "days"
+  },
+  "language": "Language",
+  "account": {
+    "types": {
+      "personal": "Personal",
+      "company": "Company"
+    }
+  },
+  "synthesizers": {
+    "serum": "Serum",
+    "vital": "Vital"
+  },
+  "fileHints": {
+    "serum": "Supported files .fxp",
+    "vital": "Supported files .vital"
+  },
+  "preset": {
+    "successMessage": "Preset \"{name}\" successfully submitted! 🎉"
+  },
+  "tags": {
+    "dnb": "🎧 Drum & Bass",
+    "bass": "🧨 Bass",
+    "synth": "🎹 Synth",
+    "lead": "🎺 Lead",
+    "pad": "🌌 Pad",
+    "pluck": "✨ Pluck",
+    "arp": "🔁 Arp",
+    "fx": "🎛 FX"
+  },
+  "messages": {
+    "registrationSuccess": "Registration successful!",
+    "projectUploaded": "Project uploaded!",
+    "noDescription": "No description",
+    "noImage": "No image",
+    "profileSaved": "Profile saved!"
+  }
+}

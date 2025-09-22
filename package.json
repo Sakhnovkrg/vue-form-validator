@@ -1,0 +1,71 @@
+{
+  "name": "vue-form-validator",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Type-safe Vue 3 form validation library",
+  "keywords": [
+    "vue",
+    "form",
+    "validation",
+    "typescript",
+    "reactive",
+    "vue3"
+  ],
+  "homepage": "https://github.com/Sakhnovkrg/vue-form-validator#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sakhnovkrg/vue-form-validator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sakhnovkrg/vue-form-validator/issues"
+  },
+  "author": "Sakhnovkrg",
+  "license": "MIT",
+  "main": "./dist/vue-form-validator.umd.js",
+  "module": "./dist/vue-form-validator.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/vue-form-validator.es.js",
+      "require": "./dist/vue-form-validator.umd.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite --config vite.playground.config.ts",
+    "build": "vue-tsc -b && vite build && tsc src/index.ts --declaration --emitDeclarationOnly --outDir dist --moduleResolution bundler --target ES2023",
+    "build:playground": "cross-env NODE_ENV=production vite build --config vite.playground.config.ts",
+    "preview": "vite preview --config vite.playground.config.ts",
+    "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx --fix",
+    "lint:check": "eslint . --ext .vue,.js,.ts,.jsx,.tsx",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@types/node": "^24.5.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/tsconfig": "^0.7.0",
+    "autoprefixer": "^10.4.21",
+    "cross-env": "^10.0.0",
+    "eslint": "^9.35.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-vue": "^10.4.0",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2",
+    "vue": "^3.5.18",
+    "vue-i18n": "^9.14.5",
+    "vue-tsc": "^3.0.5"
+  }
+}
