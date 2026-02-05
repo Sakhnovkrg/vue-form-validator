@@ -14,7 +14,7 @@
   "homepage": "https://github.com/Sakhnovkrg/vue-form-validator#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Sakhnovkrg/vue-form-validator.git"
+    "url": "git+https://github.com/Sakhnovkrg/vue-form-validator.git"
   },
   "bugs": {
     "url": "https://github.com/Sakhnovkrg/vue-form-validator/issues"
@@ -31,7 +31,7 @@
       "require": "./dist/vue-form-validator.umd.js"
     }
   },
-    "publishConfig": {
+  "publishConfig": {
     "access": "public"
   },
   "files": [
