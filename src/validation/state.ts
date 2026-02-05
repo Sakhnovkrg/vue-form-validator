@@ -53,20 +53,54 @@ export class FormStateManager<T extends Record<string, any>> {
 
   /**
    * Получает глубокую копию текущих значений формы
+   * Корректно обрабатывает File, Date и другие специальные объекты
    * @returns Глубоко клонированные значения формы
    */
   getValues(): T {
-    // Безопасное клонирование через JSON для избежания проблем с Vue reactivity
-    try {
-      return JSON.parse(JSON.stringify(this.values)) as T
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        'Failed to clone form values, returning original object:',
-        error
-      )
-      return this.values
+    return this.deepClone(this.values) as T
+  }
+
+  /**
+   * Глубокое клонирование с поддержкой File, Date и других специальных типов
+   * @param value - Значение для клонирования
+   * @returns Клонированное значение
+   */
+  private deepClone(value: unknown): unknown {
+    if (value === null || value === undefined) {
+      return value
     }
+
+    // File и Blob — возвращаем как есть (immutable по своей природе)
+    if (
+      (typeof File !== 'undefined' && value instanceof File) ||
+      (typeof Blob !== 'undefined' && value instanceof Blob)
+    ) {
+      return value
+    }
+
+    // Date — создаём новый экземпляр
+    if (value instanceof Date) {
+      return new Date(value.getTime())
+    }
+
+    // Array — клонируем рекурсивно
+    if (Array.isArray(value)) {
+      return value.map(item => this.deepClone(item))
+    }
+
+    // Object — клонируем рекурсивно
+    if (typeof value === 'object') {
+      const cloned: Record<string, unknown> = {}
+      for (const key in value) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) {
+          cloned[key] = this.deepClone((value as Record<string, unknown>)[key])
+        }
+      }
+      return cloned
+    }
+
+    // Примитивы — возвращаем как есть
+    return value
   }
 
   /**
@@ -94,18 +128,50 @@ export class FormStateManager<T extends Record<string, any>> {
 
   /**
    * Очищает значения формы и сбрасывает все состояния
-   * @param useInitial - Если true, сбрасывает к начальным значениям; иначе к пустым строкам
+   * @param useInitial - Если true, сбрасывает к начальным значениям; иначе к пустым значениям по типу
    */
   clear(useInitial = false) {
     Object.keys(this.values).forEach(key => {
       const k = key as keyof T
-      this.values[k] = useInitial ? this.initialValues[k] : ('' as T[keyof T])
+      this.values[k] = useInitial
+        ? this.initialValues[k]
+        : this.getEmptyValue(this.initialValues[k])
       this.errors[key] = []
       this.touched[key] = false
       this.dirty[key] = false
       this.isValidating[key] = false
     })
     this.options.onClear?.()
+  }
+
+  /**
+   * Возвращает пустое значение соответствующее типу исходного значения
+   * @param initialValue - Начальное значение для определения типа
+   * @returns Пустое значение соответствующего типа
+   */
+  private getEmptyValue(initialValue: unknown): any {
+    if (initialValue === null || initialValue === undefined) {
+      return null
+    }
+
+    if (typeof initialValue === 'string') {
+      return ''
+    }
+
+    if (typeof initialValue === 'number') {
+      return 0
+    }
+
+    if (typeof initialValue === 'boolean') {
+      return false
+    }
+
+    if (Array.isArray(initialValue)) {
+      return []
+    }
+
+    // File, Date, и другие объекты — null
+    return null
   }
 
   /**
@@ -210,10 +276,74 @@ export class FormStateManager<T extends Record<string, any>> {
    * @param value - Текущее значение поля
    */
   markDirty(fieldKey: string, value: any) {
-    this.dirty[fieldKey] = value !== this.initialValues[fieldKey as keyof T]
+    const initialValue = this.initialValues[fieldKey as keyof T]
+    this.dirty[fieldKey] = !this.deepEqual(value, initialValue)
 
     // Принудительно обновляем trigger для пересчета computed
     this.dirtyTrigger.value++
+  }
+
+  /**
+   * Глубокое сравнение двух значений с поддержкой File, Date и других типов
+   * @param a - Первое значение
+   * @param b - Второе значение
+   * @returns true если значения равны
+   */
+  private deepEqual(a: unknown, b: unknown): boolean {
+    // Строгое равенство (примитивы, null, undefined, одинаковые ссылки)
+    if (a === b) return true
+
+    // Если один null/undefined, а другой нет
+    if (a === null || a === undefined || b === null || b === undefined) {
+      return false
+    }
+
+    // File — сравниваем по name, size, lastModified
+    if (
+      typeof File !== 'undefined' &&
+      a instanceof File &&
+      b instanceof File
+    ) {
+      return (
+        a.name === b.name &&
+        a.size === b.size &&
+        a.lastModified === b.lastModified
+      )
+    }
+
+    // Date — сравниваем по времени
+    if (a instanceof Date && b instanceof Date) {
+      return a.getTime() === b.getTime()
+    }
+
+    // Разные типы
+    if (typeof a !== typeof b) return false
+
+    // Массивы
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length) return false
+      return a.every((item, index) => this.deepEqual(item, b[index]))
+    }
+
+    // Один массив, другой нет
+    if (Array.isArray(a) || Array.isArray(b)) return false
+
+    // Объекты
+    if (typeof a === 'object' && typeof b === 'object') {
+      const keysA = Object.keys(a as object)
+      const keysB = Object.keys(b as object)
+
+      if (keysA.length !== keysB.length) return false
+
+      return keysA.every(key =>
+        this.deepEqual(
+          (a as Record<string, unknown>)[key],
+          (b as Record<string, unknown>)[key]
+        )
+      )
+    }
+
+    return false
   }
 
   /**

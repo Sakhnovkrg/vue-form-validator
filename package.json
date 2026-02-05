@@ -1,5 +1,5 @@
 {
-  "name": "vue-form-validator",
+  "name": "@sakhnovkrg/vue-form-validator",
   "version": "0.1.0",
   "type": "module",
   "description": "Type-safe Vue 3 form validation library",
@@ -30,6 +30,9 @@
       "import": "./dist/vue-form-validator.es.js",
       "require": "./dist/vue-form-validator.umd.js"
     }
+  },
+    "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist"

@@ -75,13 +75,15 @@ form.hasError(form.objectPath('address', 'street'))    // автодополне
 
 ## 📦 Установка
 
-⚠️ **Библиотека находится в разработке**
+```bash
+npm install @sakhnovkrg/vue-form-validator
+```
 
 ## 🚀 Быстрый старт
 
 ```vue
 <script setup lang="ts">
-import { createForm } from 'vue-form-validator'
+import { createForm } from '@sakhnovkrg/vue-form-validator'
 
 const {
   values,
@@ -147,7 +149,7 @@ const {
 Вся логика формы определяется в одном вызове `createForm()`:
 
 ```typescript
-import { createForm } from 'vue-form-validator'
+import { createForm } from '@sakhnovkrg/vue-form-validator'
 
 const form = createForm(
   // 1. Структура данных
@@ -208,7 +210,7 @@ const form = createForm(
 
 ```vue
 <script setup lang="ts">
-import { createForm, createRules } from 'vue-form-validator'
+import { createForm, createRules } from '@sakhnovkrg/vue-form-validator'
 import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 
@@ -457,7 +459,7 @@ r.custom((value, allValues) => {
 
 ```typescript
 import { computed } from 'vue'
-import { createForm, createRules } from 'vue-form-validator'
+import { createForm, createRules } from '@sakhnovkrg/vue-form-validator'
 
 const form = createForm(
   {
@@ -669,7 +671,7 @@ createForm({ startDate: '', endDate: '' }, (r, define) =>
 ### Универсальная форма для создания и редактирования
 
 ```typescript
-import { createForm } from 'vue-form-validator'
+import { createForm } from '@sakhnovkrg/vue-form-validator'
 
 interface User {
   id?: number

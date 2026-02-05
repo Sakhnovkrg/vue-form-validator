@@ -20,10 +20,7 @@ export class AdvancedRules {
     conditionValue: any,
     msg: MaybeRefOrGetter<string> = 'This field is required'
   ): Rule<any> {
-    const rule: Rule<any> = async (
-      v: any,
-      formValues?: Record<string, any>
-    ) => {
+    const rule: Rule<any> = (v: any, formValues?: Record<string, any>) => {
       if (!formValues) return null
 
       const shouldBeRequired = formValues[conditionField] === conditionValue
@@ -60,8 +57,13 @@ export class AdvancedRules {
     return async v => {
       if (!v) return null
       const message = resolveMessage(msg)
-      const isOk = await debounced(v)
-      return isOk ? null : message
+      try {
+        const isOk = await debounced(v)
+        return isOk ? null : message
+      } catch {
+        // При ошибке сети/сервера пропускаем валидацию (не блокируем пользователя)
+        return null
+      }
     }
   }
 
