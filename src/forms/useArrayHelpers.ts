@@ -20,6 +20,22 @@ export function useArrayHelpers<T extends Record<string, any>>(
     )
   }
 
+  /**
+   * Очищает stale touched/dirty/isValidating записи для вложенных путей массива
+   */
+  function clearArrayNestedState(field: string) {
+    const prefix = field + '.'
+    for (const key of Object.keys(stateManager.touched)) {
+      if (key.startsWith(prefix)) delete stateManager.touched[key]
+    }
+    for (const key of Object.keys(stateManager.dirty)) {
+      if (key.startsWith(prefix)) delete stateManager.dirty[key]
+    }
+    for (const key of Object.keys(stateManager.isValidating)) {
+      if (key.startsWith(prefix)) delete stateManager.isValidating[key]
+    }
+  }
+
   function addArrayItem<K extends keyof T>(arrayPath: K, item: any) {
     const currentArray = stateManager.values[arrayPath]
     if (Array.isArray(currentArray)) {
@@ -28,6 +44,7 @@ export function useArrayHelpers<T extends Record<string, any>>(
       ;(stateManager.values[arrayPath] as any) = [item]
     }
     validationManager.clearArrayCache(arrayPath as string)
+    clearArrayNestedState(arrayPath as string)
   }
 
   function removeArrayItem<K extends keyof T>(arrayPath: K, index: number) {
@@ -36,6 +53,7 @@ export function useArrayHelpers<T extends Record<string, any>>(
       currentArray.splice(index, 1)
     }
     validationManager.clearArrayCache(arrayPath as string)
+    clearArrayNestedState(arrayPath as string)
   }
 
   async function toggleArrayItem<K extends keyof T>(

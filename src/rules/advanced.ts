@@ -57,7 +57,7 @@ export function remote(
 ): Rule<any> {
   const debounced = debounce(checkFn, delay)
   return async v => {
-    if (!v) return null
+    if (v === null || v === undefined || v === '') return null
     const message = resolveMessage(msg)
     try {
       const isOk = await debounced(v)

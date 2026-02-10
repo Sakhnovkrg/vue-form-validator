@@ -246,7 +246,9 @@ export class ValidationManager<T extends Record<string, any>> {
     } finally {
       // Только если в Map всё ещё наш controller — значит нас не заменила новая валидация
       if (this.abortControllers.get(fieldKey) === abortController) {
-        if (validatingAsync) this.isValidating[fieldKey] = false
+        // Всегда сбрасываем isValidating: даже если текущая валидация была синхронной,
+        // предыдущая (aborted) могла оставить isValidating = true
+        this.isValidating[fieldKey] = false
         this.abortControllers.delete(fieldKey)
       }
     }
@@ -269,6 +271,18 @@ export class ValidationManager<T extends Record<string, any>> {
     }
 
     await Promise.all(allFields.map(field => this.validateField(field as any)))
+
+    // Очистить stale nested-ошибки, оставшиеся от удалённых элементов массива
+    const activeFields = new Set([
+      ...Object.keys(this.rules),
+      ...allFields,
+    ])
+    for (const key of Object.keys(this.errors)) {
+      if (key.includes('.') && !activeFields.has(key)) {
+        delete this.errors[key]
+      }
+    }
+
     return Object.values(this.errors).every(
       fieldErrors => fieldErrors.length === 0
     )
