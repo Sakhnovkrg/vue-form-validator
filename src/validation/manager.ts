@@ -1,4 +1,4 @@
-import { reactive, ref, nextTick } from 'vue'
+import { nextTick } from 'vue'
 import type { Rule, ValidationCache, FieldDependency } from '../forms/types'
 import { expandWildcardPaths, getNestedValue } from '../utils/nested'
 import { deepEqual, deepClone } from '../utils/deep'
@@ -8,9 +8,9 @@ import { deepEqual, deepClone } from '../utils/deep'
  * @template T - Тип значений формы
  */
 export class ValidationManager<T extends Record<string, any>> {
-  private validationCache = reactive<Record<string, ValidationCache>>({})
-  private fieldDependencies = ref<FieldDependency[]>([])
-  private rules = ref<Partial<{ [K in keyof T]: Rule<T[K]>[] }>>({})
+  private validationCache: Record<string, ValidationCache> = {}
+  private fieldDependencies: FieldDependency[] = []
+  private rules: Partial<{ [K in keyof T]: Rule<T[K]>[] }> = {}
   private values: T
   private errors: Record<string, string[]>
   private isValidating: Record<string, boolean>
@@ -60,7 +60,7 @@ export class ValidationManager<T extends Record<string, any>> {
   private getExpandedRules(): Record<string, Rule<any>[]> {
     if (!this.expandedRulesCache) {
       this.expandedRulesCache = expandWildcardPaths(
-        this.rules.value as any,
+        this.rules as any,
         this.values
       )
     }
@@ -79,7 +79,7 @@ export class ValidationManager<T extends Record<string, any>> {
    * @param r - Правила валидации формы
    */
   setRules(r: Partial<{ [K in keyof T]: Rule<T[K]>[] }>) {
-    this.rules.value = { ...r }
+    this.rules = { ...r }
     this.invalidateExpandedRulesCache()
     this.buildDependencies()
   }
@@ -90,7 +90,7 @@ export class ValidationManager<T extends Record<string, any>> {
    */
   private buildDependencies() {
     const dependencies: FieldDependency[] = []
-    const rulesEntries = Object.entries(this.rules.value)
+    const rulesEntries = Object.entries(this.rules)
 
     for (const [fieldName, fieldRules] of rulesEntries) {
       if (!fieldRules || !Array.isArray(fieldRules)) continue
@@ -112,7 +112,7 @@ export class ValidationManager<T extends Record<string, any>> {
       }
     }
 
-    this.fieldDependencies.value = dependencies
+    this.fieldDependencies = dependencies
   }
 
   /**
@@ -121,7 +121,7 @@ export class ValidationManager<T extends Record<string, any>> {
    * @returns Массив имен зависимых полей
    */
   getDependentFields(changedField: string): string[] {
-    return this.fieldDependencies.value
+    return this.fieldDependencies
       .filter(dep => dep.dependsOn.includes(changedField))
       .map(dep => dep.field)
   }
@@ -145,9 +145,14 @@ export class ValidationManager<T extends Record<string, any>> {
     this.abortControllers.set(fieldKey, abortController)
 
     // Обработка вложенных путей типа 'contacts.0.email'
-    const expandedRules = this.getExpandedRules()
+    // Всегда пересчитываем expanded rules для одиночной валидации,
+    // чтобы не использовать протухший кэш после мутации массивов
+    const expandedRules = expandWildcardPaths(
+      this.rules as any,
+      this.values
+    )
     const fieldRules = (expandedRules[fieldKey] ??
-      this.rules.value[name] ??
+      this.rules[name] ??
       []) as Rule<any>[]
 
     const currentValue = fieldKey.includes('.')
@@ -279,10 +284,6 @@ export class ValidationManager<T extends Record<string, any>> {
   }
 
   /**
-   * Очищает кэш валидации для всех вложенных полей в массиве
-   * @param arrayPath - Путь к полю-массиву, например 'contacts'
-   */
-  /**
    * Отменяет все выполняющиеся валидации и очищает ресурсы
    */
   dispose() {
@@ -291,6 +292,10 @@ export class ValidationManager<T extends Record<string, any>> {
     this.clearCache()
   }
 
+  /**
+   * Очищает кэш валидации для всех вложенных полей в массиве
+   * @param arrayPath - Путь к полю-массиву, например 'contacts'
+   */
   clearArrayCache(arrayPath: string) {
     this.invalidateExpandedRulesCache()
     // Очистить кэш для всех полей, начинающихся с arrayPath

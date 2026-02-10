@@ -84,20 +84,19 @@ export function createFileHelpers<T extends Record<string, any>>(formContext: {
   const ensureHelper = (field: keyof T): FileFieldHelper => {
     let inputRef: HTMLInputElement | null = null
 
+    const fileHandler = createFileHandler(
+      {
+        values: formContext.values.value,
+        touch: f => formContext.touch(f),
+        validateField: f => formContext.validateField(f),
+      },
+      field
+    )
+
     const handler = (event: Event) => {
       // Сохраняем ссылку на input элемент
       inputRef = event.target as HTMLInputElement
-
-      // Вызываем оригинальный обработчик
-      const originalHandler = createFileHandler(
-        {
-          values: formContext.values.value,
-          touch: f => formContext.touch(f),
-          validateField: f => formContext.validateField(f),
-        },
-        field
-      )
-      originalHandler(event)
+      fileHandler(event)
     }
 
     return {

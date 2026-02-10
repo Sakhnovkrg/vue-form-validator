@@ -68,7 +68,7 @@ export function createForm<const T extends Record<string, any>>(
   function touch<P extends NestedPaths<T>>(path: P): void
   function touch(key: keyof T | NestedPaths<T>): void {
     stateManager.touched[key as string] = true
-    validateField(key as any)
+    void validateField(key as any)
   }
 
   // --- Composables ---
@@ -108,9 +108,18 @@ export function createForm<const T extends Record<string, any>>(
     touch,
 
     // State management
-    clear: stateManager.clear.bind(stateManager),
-    reset: stateManager.reset.bind(stateManager),
-    resetState: stateManager.resetState.bind(stateManager),
+    clear: (useInitial?: boolean) => {
+      validationManager.clearCache()
+      stateManager.clear(useInitial)
+    },
+    reset: (newValues?: Partial<T>) => {
+      validationManager.clearCache()
+      stateManager.reset(newValues)
+    },
+    resetState: () => {
+      validationManager.clearCache()
+      stateManager.resetState()
+    },
     setValues: (newValues: Partial<T>) => {
       Object.keys(newValues).forEach(key => {
         validationManager.clearCache(key)
