@@ -37,6 +37,10 @@ export class AdvancedRules {
     ;(rule as any).__crossField = {
       dependsOn: [conditionField],
     }
+    ;(rule as any).__requiredIf = {
+      conditionField,
+      conditionValue,
+    }
 
     return rule
   }
@@ -111,14 +115,14 @@ export class AdvancedRules {
     fieldName: string,
     msg?: MaybeRefOrGetter<string>
   ): CrossFieldRule<any> {
-    const rule = async (v: any, formValues?: Record<string, any>) => {
+    const rule = (v: any, formValues?: Record<string, any>) => {
       if (!formValues) return null
       if (!v && !formValues[fieldName]) return null
       const message = resolveMessage(msg) || `Must match ${fieldName} field`
       return v === formValues[fieldName] ? null : message
     }
 
-    const crossFieldRule = rule as CrossFieldRule<any>
+    const crossFieldRule = rule as unknown as CrossFieldRule<any>
     crossFieldRule.__crossField = {
       dependsOn: [fieldName],
     }
@@ -137,7 +141,7 @@ export class AdvancedRules {
     startDateField: string,
     msg?: MaybeRefOrGetter<string>
   ): CrossFieldRule<string> {
-    const rule = async (v: string, formValues?: Record<string, any>) => {
+    const rule = (v: string, formValues?: Record<string, any>) => {
       if (!formValues) return null
       if (!v || !formValues[startDateField]) return null
 
@@ -149,7 +153,7 @@ export class AdvancedRules {
       return endDate > startDate ? null : message
     }
 
-    const crossFieldRule = rule as CrossFieldRule<string>
+    const crossFieldRule = rule as unknown as CrossFieldRule<string>
     crossFieldRule.__crossField = {
       dependsOn: [startDateField],
     }

@@ -301,6 +301,7 @@ export interface FormInstance<T extends Record<string, any>> {
   setErrors: (_errors: Partial<Record<keyof T, string[]>>) => void
   resetErrors: () => void
   clearCache: (fieldKey?: string) => void
+  dispose: () => void
 
   // Утилиты для массивов
   addArrayItem: <K extends keyof T>(_field: K, _item: any) => void
@@ -311,10 +312,6 @@ export interface FormInstance<T extends Record<string, any>> {
   // Файловые помощники и удобный доступ
   file: import('../utils/fileHelpers').FileHelpers<T>
   val: T
-  isValidRef: import('vue').ComputedRef<boolean>
-  isDirtyRef: import('vue').ComputedRef<boolean>
-  hasAnyErrorsRef: import('vue').ComputedRef<boolean>
-  isSubmittingRef: import('vue').Ref<boolean>
 
   // Методы с поддержкой как простых, так и nested путей (перегрузки)
   setRules: (_rules: FormRules<T>) => void

@@ -1,6 +1,11 @@
 import { reactive, ref, nextTick } from 'vue'
 import type { Rule, ValidationCache, FieldDependency } from '../forms/types'
-import { expandWildcardPaths, getNestedValue } from '../utils/helpers'
+import {
+  expandWildcardPaths,
+  getNestedValue,
+  deepEqual,
+  deepClone,
+} from '../utils/helpers'
 
 /**
  * Управляет логикой валидации формы, включая кэширование и кросс-полевые зависимости
@@ -14,6 +19,7 @@ export class ValidationManager<T extends Record<string, any>> {
   private errors: Record<string, string[]>
   private isValidating: Record<string, boolean>
   private abortControllers = new Map<string, AbortController>()
+  private expandedRulesCache: Record<string, Rule<any>[]> | null = null
 
   /**
    * Создает новый экземпляр ValidationManager
@@ -37,15 +43,39 @@ export class ValidationManager<T extends Record<string, any>> {
    * @returns Преобразованное сообщение об ошибке или null
    */
   private resolveValidationResult(
-    result: string | null | undefined
-  ): string | null {
-    if (!result) return null
+    result: string | string[] | null | undefined
+  ): string[] {
+    if (!result) return []
 
     if (typeof result === 'string') {
-      return result
+      return [result]
     }
 
-    return null
+    if (Array.isArray(result)) {
+      return result.filter(r => typeof r === 'string' && r.length > 0)
+    }
+
+    return []
+  }
+
+  /**
+   * Получает расширенные правила с кэшированием
+   */
+  private getExpandedRules(): Record<string, Rule<any>[]> {
+    if (!this.expandedRulesCache) {
+      this.expandedRulesCache = expandWildcardPaths(
+        this.rules.value as any,
+        this.values
+      )
+    }
+    return this.expandedRulesCache
+  }
+
+  /**
+   * Инвалидирует кэш расширенных правил
+   */
+  private invalidateExpandedRulesCache() {
+    this.expandedRulesCache = null
   }
 
   /**
@@ -54,6 +84,7 @@ export class ValidationManager<T extends Record<string, any>> {
    */
   setRules(r: Partial<{ [K in keyof T]: Rule<T[K]>[] }>) {
     this.rules.value = { ...r }
+    this.invalidateExpandedRulesCache()
     this.buildDependencies()
   }
 
@@ -118,10 +149,7 @@ export class ValidationManager<T extends Record<string, any>> {
     this.abortControllers.set(fieldKey, abortController)
 
     // Обработка вложенных путей типа 'contacts.0.email'
-    const expandedRules = expandWildcardPaths(
-      this.rules.value as any,
-      this.values
-    )
+    const expandedRules = this.getExpandedRules()
     const fieldRules = (expandedRules[fieldKey] ??
       this.rules.value[name] ??
       []) as Rule<any>[]
@@ -132,14 +160,18 @@ export class ValidationManager<T extends Record<string, any>> {
 
     if (!fieldRules.length) {
       this.errors[fieldKey] = []
-      this.abortControllers.delete(fieldKey)
+      if (this.abortControllers.get(fieldKey) === abortController) {
+        this.abortControllers.delete(fieldKey)
+      }
       return []
     }
 
     const cached = this.validationCache[fieldKey]
-    if (cached && cached?.value === currentValue) {
+    if (cached && deepEqual(cached.value, currentValue)) {
       this.errors[fieldKey] = [...cached.errors]
-      this.abortControllers.delete(fieldKey)
+      if (this.abortControllers.get(fieldKey) === abortController) {
+        this.abortControllers.delete(fieldKey)
+      }
       return cached.errors
     }
 
@@ -165,30 +197,32 @@ export class ValidationManager<T extends Record<string, any>> {
           if (abortController.signal.aborted) {
             return []
           }
-          const resolvedResult = this.resolveValidationResult(result)
-          if (resolvedResult) {
-            fieldErrors.push(resolvedResult)
+          const resolvedErrors = this.resolveValidationResult(result)
+          if (resolvedErrors.length > 0) {
+            fieldErrors.push(...resolvedErrors)
             break
           }
         } else {
-          const result = maybePromise as string | null | undefined
-          const resolvedResult = this.resolveValidationResult(result)
-          if (resolvedResult) {
-            fieldErrors.push(resolvedResult)
+          const resolvedErrors = this.resolveValidationResult(maybePromise)
+          if (resolvedErrors.length > 0) {
+            fieldErrors.push(...resolvedErrors)
             break
           }
         }
       }
 
       this.validationCache[fieldKey] = {
-        value: currentValue,
+        value: deepClone(currentValue),
         errors: fieldErrors,
       }
       this.errors[fieldKey] = fieldErrors
       return fieldErrors
     } finally {
-      if (validatingAsync) this.isValidating[fieldKey] = false
-      this.abortControllers.delete(fieldKey)
+      // Только если в Map всё ещё наш controller — значит нас не заменила новая валидация
+      if (this.abortControllers.get(fieldKey) === abortController) {
+        if (validatingAsync) this.isValidating[fieldKey] = false
+        this.abortControllers.delete(fieldKey)
+      }
     }
   }
 
@@ -198,11 +232,8 @@ export class ValidationManager<T extends Record<string, any>> {
    */
   async validateForm(): Promise<boolean> {
     // Получить расширенные правила, включающие поля массивов типа 'contacts.0.email'
-    const expandedRules = expandWildcardPaths(
-      this.rules.value as any,
-      this.values
-    )
-    const allFields = Object.keys(expandedRules)
+    this.invalidateExpandedRulesCache()
+    const allFields = Object.keys(this.getExpandedRules())
 
     await Promise.all(allFields.map(field => this.validateField(field as any)))
     return Object.values(this.errors).every(
@@ -248,7 +279,17 @@ export class ValidationManager<T extends Record<string, any>> {
    * Очищает кэш валидации для всех вложенных полей в массиве
    * @param arrayPath - Путь к полю-массиву, например 'contacts'
    */
+  /**
+   * Отменяет все выполняющиеся валидации и очищает ресурсы
+   */
+  dispose() {
+    this.abortControllers.forEach(controller => controller.abort())
+    this.abortControllers.clear()
+    this.clearCache()
+  }
+
   clearArrayCache(arrayPath: string) {
+    this.invalidateExpandedRulesCache()
     // Очистить кэш для всех полей, начинающихся с arrayPath
     const keysToDelete = Object.keys(this.validationCache).filter(key =>
       key.startsWith(arrayPath + '.')

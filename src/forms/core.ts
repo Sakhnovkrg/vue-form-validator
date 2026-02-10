@@ -207,10 +207,12 @@ export function createForm<const T extends Record<string, any>>(
     return `${String(objectField)}.${String(property)}` as any
   }
 
+  const watchStopHandles: Array<() => void> = []
+
   Object.keys(stateManager.values).forEach(key => {
     const k = key as keyof T
 
-    watch(
+    const stop = watch(
       () => stateManager.values[k],
       async (newValue, oldValue) => {
         if (typeof newValue !== 'object' && newValue === oldValue) return
@@ -230,6 +232,7 @@ export function createForm<const T extends Record<string, any>>(
       },
       { flush: 'post', deep: true }
     )
+    watchStopHandles.push(stop)
   })
 
   const reactiveState = stateManager.getRefsState()
@@ -295,12 +298,6 @@ export function createForm<const T extends Record<string, any>>(
       return stateManager.values as T
     },
 
-    // Reactive boolean refs for advanced usage
-    isValidRef: stateManager.isValid,
-    isDirtyRef: stateManager.isDirty,
-    hasAnyErrorsRef: stateManager.hasAnyErrors,
-    isSubmittingRef: stateManager.isSubmitting,
-
     // Утилиты для массивов
     arrayIncludes,
     addArrayItem,
@@ -322,8 +319,8 @@ export function createForm<const T extends Record<string, any>>(
         addArrayItem(field, item)
       }
 
+      stateManager.touched[field as string] = true
       validationManager.clearCache(field as string)
-      touch(field)
       await validateField(field as any)
     },
 
@@ -333,5 +330,12 @@ export function createForm<const T extends Record<string, any>>(
 
     // Внутренние методы для продвинутого использования
     clearCache: validationManager.clearCache.bind(validationManager),
+
+    // Очистка ресурсов (watchers, abort controllers)
+    dispose: () => {
+      watchStopHandles.forEach(stop => stop())
+      watchStopHandles.length = 0
+      validationManager.dispose()
+    },
   }
 }
