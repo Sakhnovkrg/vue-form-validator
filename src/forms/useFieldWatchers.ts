@@ -25,6 +25,15 @@ export function useFieldWatchers<T extends Record<string, any>>(
           await validateField(k)
         }
 
+        // Ревалидируем touched вложенные поля (для wildcard правил типа 'contacts.*.email')
+        const prefix = key + '.'
+        const touchedNestedFields = Object.keys(stateManager.touched).filter(
+          tKey => tKey.startsWith(prefix) && stateManager.touched[tKey]
+        )
+        for (const nestedField of touchedNestedFields) {
+          await validateField(nestedField as any)
+        }
+
         await validationManager.validateDependentFields(
           key,
           stateManager.touched

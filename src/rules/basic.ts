@@ -79,9 +79,14 @@ export function regex(
   pattern: RegExp,
   msg: MaybeRefOrGetter<string> = 'Invalid format'
 ): Rule<string> {
+  // Убираем флаг g для предотвращения stateful lastIndex поведения
+  const safePattern = pattern.global
+    ? new RegExp(pattern.source, pattern.flags.replace('g', ''))
+    : pattern
+
   return v => {
     const message = resolveMessage(msg)
-    return !v || pattern.test(v) ? null : message
+    return !v || safePattern.test(v) ? null : message
   }
 }
 
@@ -94,9 +99,9 @@ export function numeric(
   msg: MaybeRefOrGetter<string> = 'Only numbers are allowed'
 ): Rule<string | number> {
   return v => {
-    if (!v && v !== 0) return null
+    if (v === null || v === undefined || v === '') return null
     const message = resolveMessage(msg)
-    return /^\d+$/.test(String(v)) ? null : message
+    return /^-?\d*\.?\d+$/.test(String(v)) ? null : message
   }
 }
 
@@ -116,7 +121,7 @@ export function between(
     throw new Error('Minimum value cannot be greater than maximum value')
 
   return v => {
-    if (v === null || v === undefined) return null
+    if (v === null || v === undefined || v === '') return null
     const num = Number(v)
     const message =
       resolveMessage(msg) || `Value must be between ${min} and ${max}`
@@ -139,8 +144,9 @@ export function oneOf(
   }
 
   return v => {
+    if (v === null || v === undefined || v === '') return null
     const message = resolveMessage(msg)
-    return !v || list.includes(v) ? null : message
+    return list.includes(v) ? null : message
   }
 }
 
@@ -152,7 +158,7 @@ export function oneOf(
  */
 export function minValue(min: number, msg?: MaybeRefOrGetter<string>): Rule<number> {
   return v => {
-    if (v === null || v === undefined) return null
+    if (v === null || v === undefined || v === '') return null
     const num = Number(v)
     const message = resolveMessage(msg) || `Minimum value: ${min}`
     return !isNaN(num) && num >= min ? null : message
@@ -167,7 +173,7 @@ export function minValue(min: number, msg?: MaybeRefOrGetter<string>): Rule<numb
  */
 export function maxValue(max: number, msg?: MaybeRefOrGetter<string>): Rule<number> {
   return v => {
-    if (v === null || v === undefined) return null
+    if (v === null || v === undefined || v === '') return null
     const num = Number(v)
     const message = resolveMessage(msg) || `Maximum value: ${max}`
     return !isNaN(num) && num <= max ? null : message

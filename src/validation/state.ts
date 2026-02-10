@@ -6,6 +6,7 @@ import type {
   Rule,
 } from '../forms/types'
 import { deepClone, deepEqual } from '../utils/deep'
+import { getNestedValue } from '../utils/nested'
 
 /**
  * Управляет состоянием формы, включая значения, ошибки, состояния touched и dirty
@@ -143,6 +144,7 @@ export class FormStateManager<T extends Record<string, any>> {
       this.dirty[key] = false
       this.isValidating[key] = false
     })
+    this.clearNestedState()
     this.options.onClear?.()
   }
 
@@ -197,6 +199,7 @@ export class FormStateManager<T extends Record<string, any>> {
       this.dirty[key] = false
       this.isValidating[key] = false
     })
+    this.clearNestedState()
   }
 
   /**
@@ -209,6 +212,7 @@ export class FormStateManager<T extends Record<string, any>> {
       this.dirty[key] = false
       this.isValidating[key] = false
     })
+    this.clearNestedState()
   }
 
   /**
@@ -228,6 +232,24 @@ export class FormStateManager<T extends Record<string, any>> {
   }
 
   /**
+   * Удаляет записи для вложенных путей (e.g. 'contacts.0.email') из errors/touched/dirty/isValidating
+   */
+  private clearNestedState() {
+    for (const key of Object.keys(this.errors)) {
+      if (key.includes('.')) delete this.errors[key]
+    }
+    for (const key of Object.keys(this.touched)) {
+      if (key.includes('.')) delete this.touched[key]
+    }
+    for (const key of Object.keys(this.dirty)) {
+      if (key.includes('.')) delete this.dirty[key]
+    }
+    for (const key of Object.keys(this.isValidating)) {
+      if (key.includes('.')) delete this.isValidating[key]
+    }
+  }
+
+  /**
    * Проверяет, является ли поле условно неактивным
    * Использует метаданные __requiredIf вместо вызова правил
    * @param fieldKey - Ключ поля для проверки
@@ -240,8 +262,8 @@ export class FormStateManager<T extends Record<string, any>> {
     for (const rule of fieldRules) {
       const meta = (rule as any).__requiredIf
       if (meta) {
-        // Условие не выполнено — поле неактивно
-        if (this.values[meta.conditionField as keyof T] !== meta.conditionValue) {
+        const conditionValue = getNestedValue(this.values, meta.conditionField)
+        if (conditionValue !== meta.conditionValue) {
           return true
         }
       }

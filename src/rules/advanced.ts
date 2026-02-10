@@ -2,6 +2,7 @@ import type { MaybeRefOrGetter } from 'vue'
 import type { Rule, CrossFieldRule } from '../forms/types'
 import { debounce } from '../utils/debounce'
 import { resolveMessage } from '../utils/helpers'
+import { getNestedValue } from '../utils/nested'
 
 /**
  * Правило условной обязательности
@@ -19,7 +20,7 @@ export function requiredIf(
   const rule: Rule<any> = (v: any, formValues?: Record<string, any>) => {
     if (!formValues) return null
 
-    const shouldBeRequired = formValues[conditionField] === conditionValue
+    const shouldBeRequired = getNestedValue(formValues, conditionField) === conditionValue
 
     if (!shouldBeRequired) return null
 
@@ -114,9 +115,11 @@ export function sameAs(
 ): CrossFieldRule<any> {
   const rule = (v: any, formValues?: Record<string, any>) => {
     if (!formValues) return null
-    if (!v && !formValues[fieldName]) return null
+    const otherValue = getNestedValue(formValues, fieldName)
+    const isEmpty = (val: any) => val === null || val === undefined || val === ''
+    if (isEmpty(v) && isEmpty(otherValue)) return null
     const message = resolveMessage(msg) || `Must match ${fieldName} field`
-    return v === formValues[fieldName] ? null : message
+    return v === otherValue ? null : message
   }
 
   const crossFieldRule = rule as unknown as CrossFieldRule<any>
@@ -140,9 +143,10 @@ export function dateAfter(
 ): CrossFieldRule<string> {
   const rule = (v: string, formValues?: Record<string, any>) => {
     if (!formValues) return null
-    if (!v || !formValues[startDateField]) return null
+    const startDateValue = getNestedValue(formValues, startDateField)
+    if (!v || !startDateValue) return null
 
-    const startDate = new Date(formValues[startDateField])
+    const startDate = new Date(startDateValue)
     const endDate = new Date(v)
     const message =
       resolveMessage(msg) || `Date must be after ${startDateField}`

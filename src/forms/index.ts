@@ -66,15 +66,17 @@ export function createForm<const T extends Record<string, any>>(
     const stopRulesWatch = watch(
       computedRules,
       async newRules => {
+        // setRules автоматически очистит ошибки полей, удалённых из правил
         form.setRules(newRules)
 
-        // Принудительно ревалидируем ВСЕ поля с ошибками, независимо от состояния touched
+        // Собираем ВСЕ поля с ошибками (включая nested вроде 'contacts.0.email')
         const fieldsWithErrors: string[] = []
-        Object.keys(newRules).forEach(fieldName => {
-          if (form.hasError(fieldName as any)) {
-            fieldsWithErrors.push(fieldName)
+        const currentErrors = form.errors.value
+        for (const key of Object.keys(currentErrors)) {
+          if (currentErrors[key]?.length > 0) {
+            fieldsWithErrors.push(key)
           }
-        })
+        }
 
         // Очищаем кэш валидации для принудительной свежей валидации
         form.clearCache()

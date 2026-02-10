@@ -82,6 +82,24 @@ export class ValidationManager<T extends Record<string, any>> {
     this.rules = { ...r }
     this.invalidateExpandedRulesCache()
     this.buildDependencies()
+    this.clearStaleErrors()
+  }
+
+  /**
+   * Удаляет ошибки для полей, у которых больше нет правил валидации
+   */
+  private clearStaleErrors() {
+    const expandedRules = this.getExpandedRules()
+    const activeFields = new Set([
+      ...Object.keys(this.rules),
+      ...Object.keys(expandedRules),
+    ])
+
+    for (const key of Object.keys(this.errors)) {
+      if (!activeFields.has(key)) {
+        delete this.errors[key]
+      }
+    }
   }
 
   /**
@@ -283,6 +301,13 @@ export class ValidationManager<T extends Record<string, any>> {
   clearCache(fieldKey?: string) {
     if (fieldKey) {
       delete this.validationCache[fieldKey]
+      // Также очищаем кэш для вложенных путей (e.g. 'contacts' → 'contacts.0.email')
+      const prefix = fieldKey + '.'
+      for (const key of Object.keys(this.validationCache)) {
+        if (key.startsWith(prefix)) {
+          delete this.validationCache[key]
+        }
+      }
     } else {
       this.validationCache = {}
     }
