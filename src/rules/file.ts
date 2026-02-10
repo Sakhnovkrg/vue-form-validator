@@ -90,6 +90,10 @@ export function fileType(
       return !allowedTypes.some(type => {
         if (type.startsWith('.')) {
           return file.name.toLowerCase().endsWith(type.toLowerCase())
+        } else if (type.endsWith('/*')) {
+          // MIME wildcard: 'image/*' matches 'image/png', 'image/jpeg', etc.
+          const prefix = type.slice(0, -1)
+          return file.type.startsWith(prefix)
         } else {
           return file.type === type
         }
