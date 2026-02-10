@@ -259,17 +259,21 @@ export class FormStateManager<T extends Record<string, any>> {
     const fieldRules = this.rules[fieldKey]
     if (!fieldRules) return false
 
+    // Собираем все requiredIf правила
+    const requiredIfMetas: Array<{ conditionField: string; conditionValue: any }> = []
     for (const rule of fieldRules) {
       const meta = (rule as any).__requiredIf
       if (meta) {
-        const conditionValue = getNestedValue(this.values, meta.conditionField)
-        if (conditionValue !== meta.conditionValue) {
-          return true
-        }
+        requiredIfMetas.push(meta)
       }
     }
 
-    return false
+    // Поле неактивно только если есть requiredIf правила И ни одно условие не выполнено
+    if (requiredIfMetas.length === 0) return false
+    return requiredIfMetas.every(meta => {
+      const conditionValue = getNestedValue(this.values, meta.conditionField)
+      return conditionValue !== meta.conditionValue
+    })
   }
 
   /**

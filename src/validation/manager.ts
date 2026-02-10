@@ -345,7 +345,9 @@ export class ValidationManager<T extends Record<string, any>> {
    */
   clearArrayCache(arrayPath: string) {
     this.invalidateExpandedRulesCache()
-    // Очистить кэш для всех полей, начинающихся с arrayPath
+    // Очистить кэш самого поля-массива (e.g. arrayMinLength cache)
+    delete this.validationCache[arrayPath]
+    // Очистить кэш для всех вложенных полей (e.g. 'contacts.0.email')
     const keysToDelete = Object.keys(this.validationCache).filter(key =>
       key.startsWith(arrayPath + '.')
     )

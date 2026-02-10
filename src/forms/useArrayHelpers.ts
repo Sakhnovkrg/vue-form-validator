@@ -45,6 +45,10 @@ export function useArrayHelpers<T extends Record<string, any>>(
     }
     validationManager.clearArrayCache(arrayPath as string)
     clearArrayNestedState(arrayPath as string)
+    // Ревалидируем массивное поле (e.g. arrayMinLength) если оно touched
+    if (stateManager.touched[arrayPath as string]) {
+      void validateField(arrayPath as any)
+    }
   }
 
   function removeArrayItem<K extends keyof T>(arrayPath: K, index: number) {
@@ -54,6 +58,10 @@ export function useArrayHelpers<T extends Record<string, any>>(
     }
     validationManager.clearArrayCache(arrayPath as string)
     clearArrayNestedState(arrayPath as string)
+    // Ревалидируем массивное поле (e.g. arrayMinLength) если оно touched
+    if (stateManager.touched[arrayPath as string]) {
+      void validateField(arrayPath as any)
+    }
   }
 
   async function toggleArrayItem<K extends keyof T>(
