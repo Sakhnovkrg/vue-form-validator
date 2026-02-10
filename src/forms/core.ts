@@ -44,10 +44,7 @@ export function createForm<const T extends Record<string, any>>(
   }
 
   async function validateForm(): Promise<boolean> {
-    Object.keys(stateManager.values).forEach(key => {
-      stateManager.touched[key] = true
-    })
-    return validationManager.validateForm()
+    return validationManager.validateForm(stateManager.touched)
   }
 
   async function submit(): Promise<void> {
@@ -128,7 +125,10 @@ export function createForm<const T extends Record<string, any>>(
     },
     getValues: stateManager.getValues.bind(stateManager),
     setErrors: stateManager.setErrors.bind(stateManager),
-    resetErrors: stateManager.resetErrors.bind(stateManager),
+    resetErrors: () => {
+      validationManager.clearCache()
+      stateManager.resetErrors()
+    },
 
     // Field status
     hasError: stateManager.hasError.bind(stateManager),

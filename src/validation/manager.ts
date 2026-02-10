@@ -238,10 +238,17 @@ export class ValidationManager<T extends Record<string, any>> {
    * Валидирует все поля формы параллельно (включая расширенные поля массивов)
    * @returns Promise, разрешающийся в true, если форма валидна
    */
-  async validateForm(): Promise<boolean> {
+  async validateForm(touched?: Record<string, boolean>): Promise<boolean> {
     // Получить расширенные правила, включающие поля массивов типа 'contacts.0.email'
     this.invalidateExpandedRulesCache()
     const allFields = Object.keys(this.getExpandedRules())
+
+    // Пометить все поля (включая nested) как touched для авто-ревалидации при изменении
+    if (touched) {
+      for (const field of allFields) {
+        touched[field] = true
+      }
+    }
 
     await Promise.all(allFields.map(field => this.validateField(field as any)))
     return Object.values(this.errors).every(
@@ -277,9 +284,7 @@ export class ValidationManager<T extends Record<string, any>> {
     if (fieldKey) {
       delete this.validationCache[fieldKey]
     } else {
-      Object.keys(this.validationCache).forEach(key => {
-        delete this.validationCache[key]
-      })
+      this.validationCache = {}
     }
   }
 
