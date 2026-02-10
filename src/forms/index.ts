@@ -63,7 +63,7 @@ export function createForm<const T extends Record<string, any>>(
     form.setRules(computedRules.value)
 
     // Watch for changes in computed rules and update form
-    watch(
+    const stopRulesWatch = watch(
       computedRules,
       async newRules => {
         form.setRules(newRules)
@@ -86,6 +86,13 @@ export function createForm<const T extends Record<string, any>>(
       },
       { deep: true }
     )
+
+    // Patch dispose to also stop the rules watcher
+    const originalDispose = form.dispose
+    form.dispose = () => {
+      stopRulesWatch()
+      originalDispose()
+    }
   }
 
   return form

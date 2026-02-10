@@ -1,11 +1,11 @@
-import { reactive, ref, computed, toRefs, type ComputedRef } from 'vue'
+import { reactive, ref, computed, toRef, type ComputedRef, type Ref } from 'vue'
 import type {
   FormOptions,
   FieldStatus,
   NestedPaths,
   Rule,
 } from '../forms/types'
-import { deepClone, deepEqual } from '../utils/helpers'
+import { deepClone, deepEqual } from '../utils/deep'
 
 /**
  * Управляет состоянием формы, включая значения, ошибки, состояния touched и dirty
@@ -315,32 +315,17 @@ export class FormStateManager<T extends Record<string, any>> {
   }
 
   /**
-   * Создает реактивный объект состояния со всеми свойствами формы
-   * @returns Реактивный объект состояния формы
-   * @internal
-   */
-  getReactiveState() {
-    return reactive({
-      values: this.values,
-      errors: this.errors,
-      touched: this.touched,
-      dirty: this.dirty,
-      isValidating: this.isValidating,
-      isSubmitting: this.isSubmitting,
-      isValid: this.isValid,
-      isDirty: this.isDirty,
-      hasAnyErrors: this.hasAnyErrors,
-      touchedFields: this.touchedFields,
-      dirtyFields: this.dirtyFields,
-    })
-  }
-
-  /**
-   * Создает refs из реактивного состояния для Composition API
+   * Создает refs к реактивному состоянию для Composition API
    * @returns Объект с реактивными refs ко всем свойствам формы
    * @internal
    */
-  getRefsState() {
-    return toRefs(this.getReactiveState())
+  getStateRefs() {
+    return {
+      values: toRef(() => this.values) as Ref<T>,
+      errors: toRef(() => this.errors) as Ref<Record<string, string[]>>,
+      touched: toRef(() => this.touched) as Ref<Record<string, boolean>>,
+      dirty: toRef(() => this.dirty) as Ref<Record<string, boolean>>,
+      isValidating: toRef(() => this.isValidating) as Ref<Record<string, boolean>>,
+    }
   }
 }

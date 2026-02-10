@@ -1,11 +1,7 @@
 import { reactive, ref, nextTick } from 'vue'
 import type { Rule, ValidationCache, FieldDependency } from '../forms/types'
-import {
-  expandWildcardPaths,
-  getNestedValue,
-  deepEqual,
-  deepClone,
-} from '../utils/helpers'
+import { expandWildcardPaths, getNestedValue } from '../utils/nested'
+import { deepEqual, deepClone } from '../utils/deep'
 
 /**
  * Управляет логикой валидации формы, включая кэширование и кросс-полевые зависимости
@@ -184,30 +180,37 @@ export class ValidationManager<T extends Record<string, any>> {
         return []
       }
       for (const rule of fieldRules) {
-        const maybePromise = (rule as any)(currentValue, this.values)
+        try {
+          const maybePromise = (rule as any)(currentValue, this.values)
 
-        if (maybePromise && typeof maybePromise.then === 'function') {
-          if (!validatingAsync) {
-            this.errors[fieldKey] = []
-            this.isValidating[fieldKey] = true
-            validatingAsync = true
+          if (maybePromise && typeof maybePromise.then === 'function') {
+            if (!validatingAsync) {
+              this.errors[fieldKey] = []
+              this.isValidating[fieldKey] = true
+              validatingAsync = true
+            }
+            const result = await maybePromise
+            // Проверить, была ли отменена валидация во время асинхронной операции
+            if (abortController.signal.aborted) {
+              return []
+            }
+            const resolvedErrors = this.resolveValidationResult(result)
+            if (resolvedErrors.length > 0) {
+              fieldErrors.push(...resolvedErrors)
+              break
+            }
+          } else {
+            const resolvedErrors = this.resolveValidationResult(maybePromise)
+            if (resolvedErrors.length > 0) {
+              fieldErrors.push(...resolvedErrors)
+              break
+            }
           }
-          const result = await maybePromise
-          // Проверить, была ли отменена валидация во время асинхронной операции
-          if (abortController.signal.aborted) {
-            return []
-          }
-          const resolvedErrors = this.resolveValidationResult(result)
-          if (resolvedErrors.length > 0) {
-            fieldErrors.push(...resolvedErrors)
-            break
-          }
-        } else {
-          const resolvedErrors = this.resolveValidationResult(maybePromise)
-          if (resolvedErrors.length > 0) {
-            fieldErrors.push(...resolvedErrors)
-            break
-          }
+        } catch (err) {
+          const message =
+            err instanceof Error ? err.message : 'Validation error'
+          fieldErrors.push(message)
+          break
         }
       }
 

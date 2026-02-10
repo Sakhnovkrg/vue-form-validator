@@ -1,5 +1,5 @@
 import { computed, type ComputedRef } from 'vue'
-import { toFileArray, formatFileSize, createFileHandler } from './helpers'
+import { toFileArray, formatFileSize } from './helpers'
 
 /**
  * Интерфейс файлового помощника для отдельных полей
@@ -34,6 +34,41 @@ type FileFields<T> = {
  */
 export type FileHelpers<T extends Record<string, any>> = {
   [K in FileFields<T>]: FileFieldHelper
+}
+
+/**
+ * Создает обработчик события файлового input с автовалидацией
+ */
+function createFileHandler<T extends Record<string, any>>(
+  form: {
+    values: T
+    touch: (_field: string | number | symbol) => void
+    validateField: (_field: string | number | symbol) => Promise<any> | void
+  },
+  field: keyof T
+) {
+  return (event: Event) => {
+    const target = event.target as HTMLInputElement | null
+    if (!target) return
+
+    const currentValue = (form.values as any)[field]
+    const isMultiple = target.multiple || Array.isArray(currentValue)
+
+    if (isMultiple) {
+      ;(form.values as any)[field] =
+        target.files && target.files.length > 0
+          ? Array.from(target.files)
+          : null
+    } else {
+      ;(form.values as any)[field] = target.files?.[0] ?? null
+    }
+
+    form.touch(field as string)
+    const result = form.validateField(field as string)
+    if (result && typeof (result as Promise<any>).then === 'function') {
+      void result
+    }
+  }
 }
 
 /**

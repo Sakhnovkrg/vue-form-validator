@@ -1,35 +1,61 @@
-import { BasicRules } from './basic'
-import { FileRules } from './file'
-import { ArrayRules } from './array'
-import { AdvancedRules } from './advanced'
+import {
+  required,
+  minLength,
+  maxLength,
+  email,
+  regex,
+  numeric,
+  between,
+  oneOf,
+  minValue,
+  maxValue,
+} from './basic'
+import {
+  fileRequired,
+  fileSize,
+  fileType,
+  fileCount,
+} from './file'
+import {
+  arrayMinLength,
+  arrayRequired,
+  arrayMaxLength,
+} from './array'
+import {
+  remote,
+  custom,
+  sameAs,
+  dateAfter,
+  requiredIf,
+} from './advanced'
 import type { Rule, RuleChain } from '../forms/types'
 
 /**
  * Карта всех доступных фабрик правил валидации
  */
 type FactoryMap = {
-  required: BasicRules['required']
-  minLength: BasicRules['minLength']
-  maxLength: BasicRules['maxLength']
-  email: BasicRules['email']
-  regex: BasicRules['regex']
-  numeric: BasicRules['numeric']
-  between: BasicRules['between']
-  oneOf: BasicRules['oneOf']
-  minValue: BasicRules['minValue']
-  maxValue: BasicRules['maxValue']
-  fileRequired: FileRules['fileRequired']
-  fileSize: FileRules['fileSize']
-  fileType: FileRules['fileType']
-  fileCount: FileRules['fileCount']
-  remote: AdvancedRules['remote']
-  custom: AdvancedRules['custom']
-  sameAs: AdvancedRules['sameAs']
-  dateAfter: AdvancedRules['dateAfter']
-  requiredIf: AdvancedRules['requiredIf']
-  arrayMinLength: ArrayRules['arrayMinLength']
-  arrayRequired: ArrayRules['arrayRequired']
-  arrayMaxLength: ArrayRules['arrayMaxLength']
+  required: typeof required
+  minLength: typeof minLength
+  maxLength: typeof maxLength
+  email: typeof email
+  regex: typeof regex
+  numeric: typeof numeric
+  between: typeof between
+  oneOf: typeof oneOf
+  minValue: typeof minValue
+  maxValue: typeof maxValue
+  fileRequired: typeof fileRequired
+  fileSize: typeof fileSize
+  fileType: typeof fileType
+  fileCount: typeof fileCount
+  remote: typeof remote
+  custom: typeof custom
+  sameAs: typeof sameAs
+  dateAfter: typeof dateAfter
+  requiredIf: typeof requiredIf
+  arrayMinLength: typeof arrayMinLength
+  arrayRequired: typeof arrayRequired
+  arrayMaxLength: typeof arrayMaxLength
 }
 
 /**
@@ -151,34 +177,29 @@ export type RulesBuilder = ChainableRules
  * @returns Объект с методами создания цепочек правил
  */
 export function createRules(): RulesBuilder {
-  const basic = new BasicRules()
-  const file = new FileRules()
-  const array = new ArrayRules()
-  const advanced = new AdvancedRules()
-
   const factories: FactoryMap = {
-    required: basic.required.bind(basic),
-    minLength: basic.minLength.bind(basic),
-    maxLength: basic.maxLength.bind(basic),
-    email: basic.email.bind(basic),
-    regex: basic.regex.bind(basic),
-    numeric: basic.numeric.bind(basic),
-    between: basic.between.bind(basic),
-    oneOf: basic.oneOf.bind(basic),
-    minValue: basic.minValue.bind(basic),
-    maxValue: basic.maxValue.bind(basic),
-    fileRequired: file.fileRequired.bind(file),
-    fileSize: file.fileSize.bind(file),
-    fileType: file.fileType.bind(file),
-    fileCount: file.fileCount.bind(file),
-    arrayMinLength: array.arrayMinLength.bind(array),
-    arrayRequired: array.arrayRequired.bind(array),
-    arrayMaxLength: array.arrayMaxLength.bind(array),
-    remote: advanced.remote.bind(advanced),
-    custom: advanced.custom.bind(advanced),
-    sameAs: advanced.sameAs.bind(advanced),
-    dateAfter: advanced.dateAfter.bind(advanced),
-    requiredIf: advanced.requiredIf.bind(advanced),
+    required,
+    minLength,
+    maxLength,
+    email,
+    regex,
+    numeric,
+    between,
+    oneOf,
+    minValue,
+    maxValue,
+    fileRequired,
+    fileSize,
+    fileType,
+    fileCount,
+    arrayMinLength,
+    arrayRequired,
+    arrayMaxLength,
+    remote,
+    custom,
+    sameAs,
+    dateAfter,
+    requiredIf,
   }
 
   return new Proxy({} as ChainableRules, {

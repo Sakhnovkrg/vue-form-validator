@@ -235,22 +235,22 @@ export function createForm<const T extends Record<string, any>>(
     watchStopHandles.push(stop)
   })
 
-  const reactiveState = stateManager.getRefsState()
+  const stateRefs = stateManager.getStateRefs()
 
   // File helpers
   const fileHelpers = createFileHelpers({
-    values: reactiveState.values,
+    values: stateRefs.values,
     touch: (field: any) => touch(field),
     validateField: (field: any) => validateField(field),
   })
 
   return {
     // Реактивные свойства состояния формы (исключаем touchedFields и dirtyFields)
-    values: reactiveState.values as import('vue').Ref<T>,
-    errors: reactiveState.errors,
-    touched: reactiveState.touched,
-    dirty: reactiveState.dirty,
-    isValidating: reactiveState.isValidating,
+    values: stateRefs.values as import('vue').Ref<T>,
+    errors: stateRefs.errors,
+    touched: stateRefs.touched,
+    dirty: stateRefs.dirty,
+    isValidating: stateRefs.isValidating,
 
     // Основные реактивные свойства
     isValid: stateManager.isValid,
