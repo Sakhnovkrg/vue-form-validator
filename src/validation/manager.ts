@@ -299,13 +299,16 @@ export class ValidationManager<T extends Record<string, any>> {
   ) {
     const dependentFields = this.getDependentFields(changedField)
 
-    for (const dependentField of dependentFields) {
-      if (touched[dependentField]) {
-        delete this.validationCache[dependentField]
-        await nextTick()
-        await this.validateField(dependentField as keyof T)
-      }
+    const touchedDependents = dependentFields.filter(f => touched[f])
+    if (touchedDependents.length === 0) return
+
+    for (const f of touchedDependents) {
+      delete this.validationCache[f]
     }
+    await nextTick()
+    await Promise.all(
+      touchedDependents.map(f => this.validateField(f as keyof T))
+    )
   }
 
   /**
@@ -349,6 +352,7 @@ export class ValidationManager<T extends Record<string, any>> {
     keysToDelete.forEach(key => {
       delete this.validationCache[key]
       delete this.errors[key]
+      delete this.isValidating[key]
     })
 
     // Также отменить любые выполняющиеся валидации для этих полей

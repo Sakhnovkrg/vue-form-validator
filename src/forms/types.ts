@@ -27,10 +27,10 @@ export interface SimpleRuleChainHelpers {
     _min: number,
     _max: number,
     _msg?: MaybeRefOrGetter<string>
-  ): RuleChain<number>
+  ): RuleChain<string | number>
   oneOf(_list: any[], _msg?: MaybeRefOrGetter<string>): RuleChain<any>
-  minValue(_min: number, _msg?: MaybeRefOrGetter<string>): RuleChain<number>
-  maxValue(_max: number, _msg?: MaybeRefOrGetter<string>): RuleChain<number>
+  minValue(_min: number, _msg?: MaybeRefOrGetter<string>): RuleChain<string | number>
+  maxValue(_max: number, _msg?: MaybeRefOrGetter<string>): RuleChain<string | number>
   fileRequired(_msg?: MaybeRefOrGetter<string>): RuleChain<File | File[] | null>
   fileSize(
     _maxBytes: number,
@@ -202,7 +202,7 @@ export interface FieldStatus {
 
 // ========== NESTED TYPES ==========
 
-// Array indices 0-99 для практичных случаев
+// Array indices 0-99 + catch-all ${number} для runtime-путей из arrayPath()
 type ArrayIndex =
   | `${0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}`
   | `${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}${0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}`
@@ -293,7 +293,7 @@ export interface FormInstance<T extends Record<string, any>> {
   // Методы управления состоянием
   validateForm: () => Promise<boolean>
   submit: () => Promise<void>
-  clear: () => void
+  clear: (_useInitial?: boolean) => void
   reset: (_newValues?: Partial<T>) => void
   resetState: () => void
   setValues: (_values: Partial<T>) => void
@@ -304,10 +304,19 @@ export interface FormInstance<T extends Record<string, any>> {
   dispose: () => void
 
   // Утилиты для массивов
-  addArrayItem: <K extends keyof T>(_field: K, _item: any) => void
+  addArrayItem: <K extends keyof T>(
+    _field: K,
+    _item: T[K] extends ReadonlyArray<infer U> ? U : any
+  ) => void
   removeArrayItem: <K extends keyof T>(_field: K, _index: number) => void
-  arrayIncludes: <K extends keyof T>(_field: K, _item: any) => boolean
-  toggleArrayItem: <K extends keyof T>(_field: K, _item: any) => Promise<void>
+  arrayIncludes: <K extends keyof T>(
+    _field: K,
+    _item: T[K] extends ReadonlyArray<infer U> ? U : any
+  ) => boolean
+  toggleArrayItem: <K extends keyof T>(
+    _field: K,
+    _item: T[K] extends ReadonlyArray<infer U> ? U : any
+  ) => Promise<void>
 
   // Файловые помощники и удобный доступ
   file: import('../utils/fileHelpers').FileHelpers<T>

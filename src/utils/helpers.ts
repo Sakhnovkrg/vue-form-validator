@@ -22,6 +22,7 @@ export function resolveMessage(
   message: MaybeRefOrGetter<string> | undefined
 ): string | null {
   if (!message) return null
+  // unref() only unwraps Ref, not getter functions — use typeof check for getters
   const resolved = unref(message)
   return typeof resolved === 'function' ? resolved() : resolved
 }
@@ -51,7 +52,7 @@ export function toFileArray(input: FileList | File[] | File | null): File[] {
  * Форматирует размер файла в читаемом для человека формате
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
+  if (bytes <= 0) return '0 B'
 
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
   const exp = Math.min(

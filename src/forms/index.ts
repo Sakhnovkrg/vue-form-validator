@@ -81,10 +81,10 @@ export function createForm<const T extends Record<string, any>>(
         // Очищаем кэш валидации для принудительной свежей валидации
         form.clearCache()
 
-        // Ревалидируем каждое поле с ошибками для обновления сообщений об ошибках
-        for (const field of fieldsWithErrors) {
-          await form.validateField(field as any)
-        }
+        // Ревалидируем все поля с ошибками параллельно для обновления сообщений об ошибках
+        await Promise.all(
+          fieldsWithErrors.map(field => form.validateField(field as any))
+        )
       },
       { deep: true }
     )

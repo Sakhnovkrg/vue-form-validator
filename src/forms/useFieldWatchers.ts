@@ -30,8 +30,10 @@ export function useFieldWatchers<T extends Record<string, any>>(
         const touchedNestedFields = Object.keys(stateManager.touched).filter(
           tKey => tKey.startsWith(prefix) && stateManager.touched[tKey]
         )
-        for (const nestedField of touchedNestedFields) {
-          await validateField(nestedField as any)
+        if (touchedNestedFields.length > 0) {
+          await Promise.all(
+            touchedNestedFields.map(f => validateField(f as any))
+          )
         }
 
         await validationManager.validateDependentFields(

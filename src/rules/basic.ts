@@ -116,7 +116,7 @@ export function between(
   min: number,
   max: number,
   msg?: MaybeRefOrGetter<string>
-): Rule<number> {
+): Rule<string | number> {
   if (min > max)
     throw new Error('Minimum value cannot be greater than maximum value')
 
@@ -156,7 +156,7 @@ export function oneOf(
  * @param msg - Сообщение об ошибке
  * @returns Правило валидации
  */
-export function minValue(min: number, msg?: MaybeRefOrGetter<string>): Rule<number> {
+export function minValue(min: number, msg?: MaybeRefOrGetter<string>): Rule<string | number> {
   return v => {
     if (v === null || v === undefined || v === '') return null
     const num = Number(v)
@@ -171,7 +171,7 @@ export function minValue(min: number, msg?: MaybeRefOrGetter<string>): Rule<numb
  * @param msg - Сообщение об ошибке
  * @returns Правило валидации
  */
-export function maxValue(max: number, msg?: MaybeRefOrGetter<string>): Rule<number> {
+export function maxValue(max: number, msg?: MaybeRefOrGetter<string>): Rule<string | number> {
   return v => {
     if (v === null || v === undefined || v === '') return null
     const num = Number(v)
