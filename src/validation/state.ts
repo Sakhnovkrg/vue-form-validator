@@ -77,7 +77,10 @@ export class FormStateManager<T extends Record<string, any>> {
     })
 
     this.hasAnyErrors = computed(() =>
-      Object.values(this.errors).some(fieldErrors => fieldErrors.length > 0)
+      Object.keys(this.errors).some(fieldKey => {
+        if (this.isConditionallyInactive(fieldKey)) return false
+        return (this.errors[fieldKey]?.length ?? 0) > 0
+      })
     )
 
     this.touchedFields = computed(() =>

@@ -75,14 +75,17 @@ export function useArrayHelpers<T extends Record<string, any>>(
       element => Object.is(element, item)
     )
 
+    // Мутируем массив напрямую, без вызова add/removeArrayItem,
+    // чтобы избежать тройной валидации (add/remove + watcher + явный вызов ниже)
     if (index >= 0) {
-      removeArrayItem(field, index)
+      currentArray.splice(index, 1)
     } else {
-      addArrayItem(field, item)
+      currentArray.push(item)
     }
+    validationManager.clearArrayCache(field as string)
+    clearArrayNestedState(field as string)
 
     stateManager.touched[field as string] = true
-    validationManager.clearCache(field as string)
     await validateField(field as any)
   }
 

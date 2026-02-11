@@ -19,13 +19,27 @@ export function setNestedValue(obj: any, path: string, value: any): void {
 
   const target = keys.reduce((current, key, index) => {
     if (!(key in current)) {
-      const nextKey = keys[index + 1]
+      // Для последнего промежуточного ключа проверяем lastKey, а не следующий в keys
+      const nextKey = index < keys.length - 1 ? keys[index + 1] : lastKey
       current[key] = nextKey && /^\d+$/.test(nextKey) ? [] : {}
     }
     return current[key]
   }, obj)
 
   target[lastKey] = value
+}
+
+/**
+ * Резолвит wildcard в пути, подставляя индекс из конкретного пути.
+ * resolveWildcard('contacts.*.email', 'contacts.0.confirmEmail') → 'contacts.0.email'
+ */
+export function resolveWildcard(wildcardPath: string, concretePath: string): string {
+  if (!wildcardPath.includes('*')) return wildcardPath
+  const concrete = concretePath.split('.')
+  return wildcardPath
+    .split('.')
+    .map((part, i) => (part === '*' && concrete[i] ? concrete[i] : part))
+    .join('.')
 }
 
 /**

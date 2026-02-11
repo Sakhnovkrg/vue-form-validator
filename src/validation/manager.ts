@@ -1,6 +1,6 @@
 import { nextTick } from 'vue'
 import type { Rule, ValidationCache, FieldDependency } from '../forms/types'
-import { expandWildcardPaths, getNestedValue } from '../utils/nested'
+import { expandWildcardPaths, getNestedValue, resolveWildcard } from '../utils/nested'
 import { deepEqual, deepClone } from '../utils/deep'
 
 /**
@@ -16,6 +16,7 @@ export class ValidationManager<T extends Record<string, any>> {
   private isValidating: Record<string, boolean>
   private abortControllers = new Map<string, AbortController>()
   private expandedRulesCache: Record<string, Rule<any>[]> | null = null
+  private hasWildcardRules = false
 
   /**
    * Создает новый экземпляр ValidationManager
@@ -75,11 +76,22 @@ export class ValidationManager<T extends Record<string, any>> {
   }
 
   /**
+   * Проверяет, матчится ли wildcard-паттерн ('contacts.*.email') к конкретному пути ('contacts.0.email')
+   */
+  private matchesWildcard(pattern: string, concrete: string): boolean {
+    const re = new RegExp(
+      '^' + pattern.split('.').map(p => p === '*' ? '\\d+' : p).join('\\.') + '$'
+    )
+    return re.test(concrete)
+  }
+
+  /**
    * Устанавливает правила валидации и строит зависимости полей
    * @param r - Правила валидации формы
    */
   setRules(r: Partial<{ [K in keyof T]: Rule<T[K]>[] }>) {
     this.rules = { ...r }
+    this.hasWildcardRules = Object.keys(this.rules).some(k => k.includes('*'))
     this.invalidateExpandedRulesCache()
     this.buildDependencies()
     this.clearStaleErrors()
@@ -139,9 +151,27 @@ export class ValidationManager<T extends Record<string, any>> {
    * @returns Массив имен зависимых полей
    */
   getDependentFields(changedField: string): string[] {
-    return this.fieldDependencies
-      .filter(dep => dep.dependsOn.includes(changedField))
-      .map(dep => dep.field)
+    const fields: string[] = []
+    for (const dep of this.fieldDependencies) {
+      const matches = dep.dependsOn.some(d => {
+        if (d === changedField) return true
+        if (d.includes('*')) return this.matchesWildcard(d, changedField)
+        return false
+      })
+      if (!matches) continue
+
+      if (dep.field.includes('*')) {
+        const expanded = this.getExpandedRules()
+        for (const key of Object.keys(expanded)) {
+          if (this.matchesWildcard(dep.field, key)) {
+            fields.push(key)
+          }
+        }
+      } else {
+        fields.push(dep.field)
+      }
+    }
+    return fields
   }
 
   /**
@@ -163,15 +193,16 @@ export class ValidationManager<T extends Record<string, any>> {
     this.abortControllers.set(fieldKey, abortController)
 
     // Обработка вложенных путей типа 'contacts.0.email'
-    // Всегда пересчитываем expanded rules для одиночной валидации,
-    // чтобы не использовать протухший кэш после мутации массивов
-    const expandedRules = expandWildcardPaths(
-      this.rules as any,
-      this.values
-    )
-    const fieldRules = (expandedRules[fieldKey] ??
-      this.rules[name] ??
-      []) as Rule<any>[]
+    // Пропускаем expansion если нет wildcard-правил (оптимизация для простых форм)
+    let fieldRules: Rule<any>[]
+    if (this.hasWildcardRules) {
+      const expandedRules = this.getExpandedRules()
+      fieldRules = (expandedRules[fieldKey] ??
+        this.rules[name] ??
+        []) as Rule<any>[]
+    } else {
+      fieldRules = (this.rules[name] ?? []) as Rule<any>[]
+    }
 
     const currentValue = fieldKey.includes('.')
       ? getNestedValue(this.values, fieldKey)
@@ -185,8 +216,32 @@ export class ValidationManager<T extends Record<string, any>> {
       return []
     }
 
+    // Собираем текущие значения cross-field зависимостей для кэша
+    // Ищем по точному совпадению, затем по wildcard-паттерну
+    let dep = this.fieldDependencies.find(d => d.field === fieldKey)
+    if (!dep && fieldKey.includes('.')) {
+      dep = this.fieldDependencies.find(d =>
+        d.field.includes('*') && this.matchesWildcard(d.field, fieldKey)
+      )
+    }
+    const depsValues: Record<string, any> = {}
+    if (dep) {
+      for (const depField of dep.dependsOn) {
+        const resolved = depField.includes('*')
+          ? resolveWildcard(depField, fieldKey)
+          : depField
+        depsValues[resolved] = resolved.includes('.')
+          ? getNestedValue(this.values, resolved)
+          : this.values[resolved as keyof T]
+      }
+    }
+
     const cached = this.validationCache[fieldKey]
-    if (cached && deepEqual(cached.value, currentValue)) {
+    if (
+      cached &&
+      deepEqual(cached.value, currentValue) &&
+      deepEqual(cached.depsValues ?? {}, depsValues)
+    ) {
       this.errors[fieldKey] = [...cached.errors]
       if (this.abortControllers.get(fieldKey) === abortController) {
         this.abortControllers.delete(fieldKey)
@@ -204,7 +259,7 @@ export class ValidationManager<T extends Record<string, any>> {
       }
       for (const rule of fieldRules) {
         try {
-          const maybePromise = (rule as any)(currentValue, this.values)
+          const maybePromise = (rule as any)(currentValue, this.values, { fieldPath: fieldKey })
 
           if (maybePromise && typeof maybePromise.then === 'function') {
             if (!validatingAsync) {
@@ -240,6 +295,7 @@ export class ValidationManager<T extends Record<string, any>> {
       this.validationCache[fieldKey] = {
         value: deepClone(currentValue),
         errors: fieldErrors,
+        depsValues: dep ? deepClone(depsValues) as Record<string, any> : undefined,
       }
       this.errors[fieldKey] = fieldErrors
       return fieldErrors
@@ -331,11 +387,18 @@ export class ValidationManager<T extends Record<string, any>> {
   }
 
   /**
+   * Отменяет все выполняющиеся валидации
+   */
+  abortAll() {
+    this.abortControllers.forEach(controller => controller.abort())
+    this.abortControllers.clear()
+  }
+
+  /**
    * Отменяет все выполняющиеся валидации и очищает ресурсы
    */
   dispose() {
-    this.abortControllers.forEach(controller => controller.abort())
-    this.abortControllers.clear()
+    this.abortAll()
     this.clearCache()
   }
 

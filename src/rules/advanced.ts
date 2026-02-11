@@ -1,8 +1,8 @@
 import type { MaybeRefOrGetter } from 'vue'
-import type { Rule, CrossFieldRule } from '../forms/types'
+import type { Rule, RuleMeta, CrossFieldRule } from '../forms/types'
 import { debounce } from '../utils/debounce'
 import { resolveMessage } from '../utils/helpers'
-import { getNestedValue } from '../utils/nested'
+import { getNestedValue, resolveWildcard } from '../utils/nested'
 
 /**
  * Правило условной обязательности
@@ -17,10 +17,10 @@ export function requiredIf(
   conditionValue: any,
   msg: MaybeRefOrGetter<string> = 'This field is required'
 ): Rule<any> {
-  const rule: Rule<any> = (v: any, formValues?: Record<string, any>) => {
+  const rule: Rule<any> = (v: any, formValues?: Record<string, any>, meta?: RuleMeta) => {
     if (!formValues) return null
-
-    const shouldBeRequired = getNestedValue(formValues, conditionField) === conditionValue
+    const resolved = meta?.fieldPath ? resolveWildcard(conditionField, meta.fieldPath) : conditionField
+    const shouldBeRequired = getNestedValue(formValues, resolved) === conditionValue
 
     if (!shouldBeRequired) return null
 
@@ -83,22 +83,22 @@ export function custom(
   ) => boolean | string | Promise<boolean | string>,
   msg?: MaybeRefOrGetter<string>
 ): Rule<any> {
-  return async (v, formValues) => {
-    const result = await Promise.resolve(validator(v, formValues || {}))
+  const resolve = (result: boolean | string): string | null => {
+    if (typeof result === 'string') return result
+    if (result === true) return null
+    return resolveMessage(msg) || 'Validation failed'
+  }
 
-    // Если результат - строка, используем её как сообщение об ошибке
-    if (typeof result === 'string') {
-      return result
+  return (v, formValues) => {
+    const result = validator(v, formValues || {})
+
+    // Если результат - промис, обрабатываем асинхронно
+    if (result && typeof (result as any).then === 'function') {
+      return (result as Promise<boolean | string>).then(resolve)
     }
 
-    // Если результат true - валидация прошла
-    if (result === true) {
-      return null
-    }
-
-    // Если результат false - используем переданное сообщение или дефолтное
-    const message = resolveMessage(msg) || 'Validation failed'
-    return message
+    // Синхронный результат
+    return resolve(result as boolean | string)
   }
 }
 
@@ -113,9 +113,10 @@ export function sameAs(
   fieldName: string,
   msg?: MaybeRefOrGetter<string>
 ): CrossFieldRule<any> {
-  const rule = (v: any, formValues?: Record<string, any>) => {
+  const rule = (v: any, formValues?: Record<string, any>, meta?: RuleMeta) => {
     if (!formValues) return null
-    const otherValue = getNestedValue(formValues, fieldName)
+    const resolved = meta?.fieldPath ? resolveWildcard(fieldName, meta.fieldPath) : fieldName
+    const otherValue = getNestedValue(formValues, resolved)
     const isEmpty = (val: any) => val === null || val === undefined || val === ''
     if (isEmpty(v) && isEmpty(otherValue)) return null
     const message = resolveMessage(msg) || `Must match ${fieldName} field`
@@ -141,9 +142,10 @@ export function dateAfter(
   startDateField: string,
   msg?: MaybeRefOrGetter<string>
 ): CrossFieldRule<string> {
-  const rule = (v: string, formValues?: Record<string, any>) => {
+  const rule = (v: string, formValues?: Record<string, any>, meta?: RuleMeta) => {
     if (!formValues) return null
-    const startDateValue = getNestedValue(formValues, startDateField)
+    const resolved = meta?.fieldPath ? resolveWildcard(startDateField, meta.fieldPath) : startDateField
+    const startDateValue = getNestedValue(formValues, resolved)
     if (!v || !startDateValue) return null
 
     const startDate = new Date(startDateValue)

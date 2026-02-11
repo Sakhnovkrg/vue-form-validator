@@ -7,9 +7,15 @@ import type { MaybeRefOrGetter } from 'vue'
  * @param values - Все значения формы для кросс-валидации полей
  * @returns Строка/массив строк с ошибками, null если валидно, или Promise с ошибками/null
  */
+export interface RuleMeta {
+  /** Конкретный путь поля, например 'contacts.0.email' */
+  fieldPath?: string
+}
+
 export type Rule<T = any> = (
   _value: T,
-  _values?: Record<string, any>
+  _values?: Record<string, any>,
+  _meta?: RuleMeta
 ) => string | string[] | null | Promise<string | string[] | null>
 
 /**
@@ -145,6 +151,8 @@ export interface ValidationCache {
   value: any
   /** Кэшированные ошибки валидации */
   errors: string[]
+  /** Кэшированные значения cross-field зависимостей */
+  depsValues?: Record<string, any>
 }
 
 /**

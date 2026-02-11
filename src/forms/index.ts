@@ -11,7 +11,7 @@ import { watch } from 'vue'
  * @param initialValues - Начальные значения для полей формы
  * @returns Экземпляр формы с автоматической типизацией
  */
-export function createForm<const T extends Record<string, any>>(
+export function createForm<T extends Record<string, any>>(
   initialValues: T
 ): ReturnType<typeof createFormInternal<T>>
 
@@ -23,7 +23,7 @@ export function createForm<const T extends Record<string, any>>(
  * @param options - Опциональная конфигурация формы (колбэки onSubmit, onClear)
  * @returns Экземпляр формы с реактивным состоянием и методами валидации
  */
-export function createForm<const T extends Record<string, any>>(
+export function createForm<T extends Record<string, any>>(
   initialValues: T,
   rulesOrBuilder:
     | ((
@@ -34,7 +34,7 @@ export function createForm<const T extends Record<string, any>>(
   options?: Omit<FormOptions<T>, 'initialValues'>
 ): ReturnType<typeof createFormInternal<T>>
 
-export function createForm<const T extends Record<string, any>>(
+export function createForm<T extends Record<string, any>>(
   initialValues: T,
   rulesOrBuilder?:
     | ((

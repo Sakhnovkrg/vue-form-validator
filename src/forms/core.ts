@@ -15,7 +15,7 @@ import { useArrayHelpers } from './useArrayHelpers'
 /**
  * Создает универсальную форму с поддержкой как простых, так и вложенных полей
  */
-export function createForm<const T extends Record<string, any>>(
+export function createForm<T extends Record<string, any>>(
   options: FormOptions<T>
 ): FormInstance<T> {
   // Создаём собственный effectScope для автоматической очистки watchers/computed
@@ -118,14 +118,17 @@ export function createForm<const T extends Record<string, any>>(
 
       // State management
       clear: (useInitial?: boolean) => {
+        validationManager.abortAll()
         validationManager.clearCache()
         stateManager.clear(useInitial)
       },
       reset: (newValues?: Partial<T>) => {
+        validationManager.abortAll()
         validationManager.clearCache()
         stateManager.reset(newValues)
       },
       resetState: () => {
+        validationManager.abortAll()
         validationManager.clearCache()
         stateManager.resetState()
       },
@@ -138,6 +141,7 @@ export function createForm<const T extends Record<string, any>>(
       getValues: stateManager.getValues.bind(stateManager),
       setErrors: stateManager.setErrors.bind(stateManager),
       resetErrors: () => {
+        validationManager.abortAll()
         validationManager.clearCache()
         stateManager.resetErrors()
       },
