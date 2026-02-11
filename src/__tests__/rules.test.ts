@@ -7,8 +7,6 @@ import { fileRequired, fileSize, fileType, fileCount } from '../rules/file'
 import { arrayMinLength, arrayRequired, arrayMaxLength } from '../rules/array'
 import { custom, sameAs, requiredIf, dateAfter, remote } from '../rules/advanced'
 
-// -- Basic -------------------------------------------------------------------
-
 describe('required', () => {
   const rule = required()
 
@@ -151,8 +149,6 @@ describe('minValue / maxValue', () => {
   })
 })
 
-// -- File --------------------------------------------------------------------
-
 describe('fileRequired', () => {
   const rule = fileRequired()
 
@@ -203,6 +199,36 @@ describe('fileType', () => {
   })
 })
 
+describe('fileSize', () => {
+  it('null пропускается', () => {
+    expect(fileSize(1024)(null)).toBeNull()
+  })
+
+  it('массив файлов — проверяет каждый', () => {
+    const rule = fileSize(5)
+    const small = new File(['x'], 'ok.txt')
+    const big = new File(['0123456789'], 'big.txt')
+    expect(rule([small])).toBeNull()
+    expect(rule([small, big])).toBeTruthy()
+  })
+
+  it('одиночный File', () => {
+    expect(fileSize(1024)(new File(['x'], 'a.txt'))).toBeNull()
+  })
+})
+
+describe('fileType', () => {
+  it('одиночный File (не массив)', () => {
+    const rule = fileType(['.txt'])
+    expect(rule(new File([''], 'a.txt', { type: 'text/plain' }))).toBeNull()
+    expect(rule(new File([''], 'a.png', { type: 'image/png' }))).toBeTruthy()
+  })
+
+  it('null пропускается', () => {
+    expect(fileType(['.txt'])(null)).toBeNull()
+  })
+})
+
 describe('fileCount', () => {
   const file = () => new File(['x'], 'f.txt')
 
@@ -215,9 +241,20 @@ describe('fileCount', () => {
     expect(fileCount(undefined, 1)([file(), file()])).toBeTruthy()
     expect(fileCount(undefined, 1)([file()])).toBeNull()
   })
-})
 
-// -- Array -------------------------------------------------------------------
+  it('null с min > 0 → ошибка', () => {
+    expect(fileCount(1)(null)).toBeTruthy()
+  })
+
+  it('null без min → ок', () => {
+    expect(fileCount(undefined, 5)(null)).toBeNull()
+  })
+
+  it('одиночный File считается как 1', () => {
+    expect(fileCount(1)(file())).toBeNull()
+    expect(fileCount(2)(file())).toBeTruthy()
+  })
+})
 
 describe('arrayMinLength / arrayMaxLength / arrayRequired', () => {
   it('arrayMinLength', () => {
@@ -239,8 +276,6 @@ describe('arrayMinLength / arrayMaxLength / arrayRequired', () => {
   })
 })
 
-// -- Advanced ----------------------------------------------------------------
-
 describe('custom', () => {
   it('синхронный boolean — возвращает string|null, НЕ промис', () => {
     const rule = custom(v => v === 'ok')
@@ -249,7 +284,6 @@ describe('custom', () => {
 
     expect(pass).toBeNull()
     expect(fail).toBe('Validation failed')
-    // Ключевой момент: синхронный валидатор не должен оборачиваться в промис
     expect(pass instanceof Promise).toBe(false)
     expect(fail instanceof Promise).toBe(false)
   })

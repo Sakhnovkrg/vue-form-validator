@@ -1,7 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
+import { ref, computed } from 'vue'
 import { deepEqual, deepClone } from '../utils/deep'
 import { debounce } from '../utils/debounce'
 import { setNestedValue, getNestedValue, expandWildcardPaths } from '../utils/nested'
+import { resolveMessage, toFileArray, formatFileSize, defineRules } from '../utils/helpers'
+import { normalizeFormRules } from '../forms/normalizeRules'
 
 describe('deepEqual', () => {
   it('primitives', () => {
@@ -185,5 +188,114 @@ describe('debounce', () => {
     expect(await second).toBe(2)
     expect(fn).toHaveBeenCalledTimes(1)
     vi.useRealTimers()
+  })
+})
+
+describe('resolveMessage', () => {
+  it('undefined → null', () => {
+    expect(resolveMessage(undefined)).toBeNull()
+  })
+
+  it('строка → строка', () => {
+    expect(resolveMessage('Ошибка')).toBe('Ошибка')
+  })
+
+  it('ref → разворачивает', () => {
+    expect(resolveMessage(ref('Из ref'))).toBe('Из ref')
+  })
+
+  it('computed → разворачивает', () => {
+    expect(resolveMessage(computed(() => 'Из computed'))).toBe('Из computed')
+  })
+
+  it('getter-функция → вызывает', () => {
+    expect(resolveMessage(() => 'Из геттера')).toBe('Из геттера')
+  })
+})
+
+describe('toFileArray', () => {
+  it('null → пустой массив', () => {
+    expect(toFileArray(null)).toEqual([])
+  })
+
+  it('File → массив из одного', () => {
+    const f = new File(['x'], 'a.txt')
+    expect(toFileArray(f)).toEqual([f])
+  })
+
+  it('File[] → тот же массив', () => {
+    const arr = [new File(['x'], 'a.txt')]
+    expect(toFileArray(arr)).toBe(arr)
+  })
+
+  it('не-File объект → пустой массив', () => {
+    expect(toFileArray({} as any)).toEqual([])
+  })
+})
+
+describe('formatFileSize', () => {
+  it('0 и отрицательные → "0 B"', () => {
+    expect(formatFileSize(0)).toBe('0 B')
+    expect(formatFileSize(-1)).toBe('0 B')
+  })
+
+  it('байты', () => {
+    expect(formatFileSize(500)).toBe('500 B')
+  })
+
+  it('килобайты', () => {
+    expect(formatFileSize(1024)).toBe('1.0 KB')
+    expect(formatFileSize(1536)).toBe('1.5 KB')
+  })
+
+  it('мегабайты', () => {
+    expect(formatFileSize(1048576)).toBe('1.0 MB')
+  })
+
+  it('гигабайты', () => {
+    expect(formatFileSize(1073741824)).toBe('1.0 GB')
+  })
+})
+
+describe('defineRules', () => {
+  it('возвращает pass-through функцию', () => {
+    const define = defineRules<{ name: string }>()
+    const rules = define({ name: [() => null] })
+    expect(rules.name).toHaveLength(1)
+  })
+})
+
+describe('normalizeFormRules', () => {
+  it('null/undefined → пустой объект', () => {
+    expect(normalizeFormRules(null)).toEqual({})
+    expect(normalizeFormRules(undefined)).toEqual({})
+  })
+
+  it('обычные правила → массивы', () => {
+    const rule = () => null
+    const result = normalizeFormRules({ name: [rule] })
+    expect(result).toEqual({ name: [rule] })
+  })
+
+  it('одиночное правило (не массив) → нормализует в массив', () => {
+    const rule = () => null
+    const result = normalizeFormRules({ name: rule })
+    expect(result).toEqual({ name: [rule] })
+  })
+
+  it('RuleChain → извлекает __rules', () => {
+    const r1 = () => null
+    const r2 = () => null
+    const chain: any = () => null
+    chain.__rules = [r1, r2]
+
+    const result = normalizeFormRules({ name: chain })
+    expect(result).toEqual({ name: [r1, r2] })
+  })
+
+  it('дедупликация правил', () => {
+    const rule = () => null
+    const result = normalizeFormRules({ name: [rule, rule] })
+    expect(result).toEqual({ name: [rule] })
   })
 })

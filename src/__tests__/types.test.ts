@@ -21,8 +21,6 @@ function make() {
   )!
 }
 
-// -- Вывод типов --------------------------------------------------------------
-
 describe('вывод типов из initialValues', () => {
   it('примитивы', () => {
     const form = make()
@@ -45,8 +43,6 @@ describe('вывод типов из initialValues', () => {
   })
 })
 
-// -- val: типобезопасный доступ -----------------------------------------------
-
 describe('val: типобезопасный доступ', () => {
   it('принимает правильные типы', () => {
     const form = make()
@@ -60,8 +56,6 @@ describe('val: типобезопасный доступ', () => {
     form.val.name = 123
   })
 })
-
-// -- Nested-пути: validateField, touch, hasError и т.д. -----------------------
 
 describe('методы с перегрузками для nested-путей', () => {
   it('принимает top-level ключи', () => {
@@ -100,8 +94,6 @@ describe('методы с перегрузками для nested-путей', ()
   })
 })
 
-// -- Массивы: addArrayItem, toggleArrayItem, arrayIncludes --------------------
-
 describe('addArrayItem: типизация элементов', () => {
   it('строковый массив принимает строку', () => {
     const form = make()
@@ -129,8 +121,6 @@ describe('addArrayItem: типизация элементов', () => {
   })
 })
 
-// -- arrayPath / objectPath ---------------------------------------------------
-
 describe('arrayPath / objectPath: возвращаемый тип', () => {
   it('arrayPath возвращает template literal', () => {
     const form = make()
@@ -150,8 +140,6 @@ describe('arrayPath / objectPath: возвращаемый тип', () => {
     form.objectPath('address', 'zip')
   })
 })
-
-// -- setRules / setValues / reset ---------------------------------------------
 
 describe('setRules принимает Partial правил', () => {
   it('принимает правила для подмножества полей', () => {
@@ -180,8 +168,6 @@ describe('setValues / reset: Partial<T>', () => {
     form.reset({ age: 'not a number' })
   })
 })
-
-// -- getValues / onSubmit: возвращаемый тип -----------------------------------
 
 describe('getValues возвращает T', () => {
   it('тип включает все поля', () => {

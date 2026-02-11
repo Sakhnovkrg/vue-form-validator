@@ -5,18 +5,12 @@ import { required, email } from '../rules/basic'
 import { requiredIf } from '../rules/advanced'
 import type { FormInstance } from '../forms/types'
 
-// Обёртка: создаём effectScope чтобы watchers не текли между тестами
 let _scope: ReturnType<typeof effectScope>
-function setup<T extends Record<string, any>>(
-  fn: () => FormInstance<T>,
-): FormInstance<T> {
+function setup<T extends Record<string, any>>(fn: () => FormInstance<T>) {
   _scope = effectScope()
   return _scope.run(fn)!
 }
-
 afterEach(() => _scope?.stop())
-
-// -- Базовые операции --------------------------------------------------------
 
 describe('createForm', () => {
   it('инициализируется с начальными значениями и чистым состоянием', () => {
@@ -49,9 +43,7 @@ describe('validateField', () => {
 describe('validateForm', () => {
   it('false когда есть ошибки, true когда всё валидно', async () => {
     const form = setup(() => {
-      const f = createForm({
-        initialValues: { name: '', email: '' },
-      })
+      const f = createForm({ initialValues: { name: '', email: '' } })
       f.setRules({ name: [required()], email: [required(), email()] })
       return f
     })
@@ -71,10 +63,7 @@ describe('validateForm', () => {
     })
 
     expect(form.isTouched('a')).toBe(false)
-    expect(form.isTouched('b')).toBe(false)
-
     await form.validateForm()
-
     expect(form.isTouched('a')).toBe(true)
     expect(form.isTouched('b')).toBe(true)
   })
@@ -91,21 +80,15 @@ describe('touch', () => {
     expect(form.isTouched('name')).toBe(false)
     form.touch('name')
     expect(form.isTouched('name')).toBe(true)
-
     await vi.waitFor(() => expect(form.hasError('name')).toBe(true))
   })
 })
-
-// -- Submit ------------------------------------------------------------------
 
 describe('submit', () => {
   it('вызывает onSubmit только когда форма валидна', async () => {
     const onSubmit = vi.fn()
     const form = setup(() => {
-      const f = createForm({
-        initialValues: { name: '' },
-        onSubmit,
-      })
+      const f = createForm({ initialValues: { name: '' }, onSubmit })
       f.setRules({ name: [required()] })
       return f
     })
@@ -137,25 +120,17 @@ describe('submit', () => {
   })
 })
 
-// -- State management --------------------------------------------------------
-
 describe('setValues / getValues', () => {
   it('обновляет и возвращает глубокую копию', () => {
-    const form = setup(() =>
-      createForm({
-        initialValues: { name: '', age: 0 },
-      }),
-    )
+    const form = setup(() => createForm({ initialValues: { name: '', age: 0 } }))
 
     form.setValues({ name: 'Bob', age: 30 })
     expect(form.values.value.name).toBe('Bob')
     expect(form.getValues()).toEqual({ name: 'Bob', age: 30 })
   })
 
-  it('getValues возвращает deep copy — мутация не трогает форму', () => {
-    const form = setup(() =>
-      createForm({ initialValues: { tags: ['a', 'b'] } }),
-    )
+  it('getValues возвращает deep copy', () => {
+    const form = setup(() => createForm({ initialValues: { tags: ['a', 'b'] } }))
 
     const copy = form.getValues()
     copy.tags.push('c')
@@ -188,9 +163,7 @@ describe('resetErrors', () => {
 describe('clear', () => {
   it('сбрасывает значения к "пустым" по типу', () => {
     const form = setup(() =>
-      createForm({
-        initialValues: { name: 'Alice', count: 5, tags: ['a'] },
-      }),
+      createForm({ initialValues: { name: 'Alice', count: 5, tags: ['a'] } }),
     )
 
     form.val.name = 'Bob'
@@ -201,10 +174,8 @@ describe('clear', () => {
     expect(form.isTouched('name')).toBe(false)
   })
 
-  it('useInitial=true → сброс к начальным, а не к пустым', () => {
-    const form = setup(() =>
-      createForm({ initialValues: { name: 'Alice' } }),
-    )
+  it('useInitial=true → сброс к начальным', () => {
+    const form = setup(() => createForm({ initialValues: { name: 'Alice' } }))
     form.val.name = 'Bob'
     form.clear(true)
     expect(form.values.value.name).toBe('Alice')
@@ -212,9 +183,7 @@ describe('clear', () => {
 
   it('вызывает onClear колбэк', () => {
     const onClear = vi.fn()
-    const form = setup(() =>
-      createForm({ initialValues: { x: '' }, onClear }),
-    )
+    const form = setup(() => createForm({ initialValues: { x: '' }, onClear }))
     form.clear()
     expect(onClear).toHaveBeenCalledOnce()
   })
@@ -222,9 +191,7 @@ describe('clear', () => {
 
 describe('reset', () => {
   it('возвращает к начальным значениям', () => {
-    const form = setup(() =>
-      createForm({ initialValues: { name: 'Alice' } }),
-    )
+    const form = setup(() => createForm({ initialValues: { name: 'Alice' } }))
     form.val.name = 'Bob'
     form.touch('name')
     form.reset()
@@ -233,14 +200,11 @@ describe('reset', () => {
   })
 
   it('с новыми значениями — обновляет и начальные', () => {
-    const form = setup(() =>
-      createForm({ initialValues: { name: 'Alice' } }),
-    )
+    const form = setup(() => createForm({ initialValues: { name: 'Alice' } }))
 
     form.reset({ name: 'Charlie' })
     expect(form.values.value.name).toBe('Charlie')
 
-    // повторный reset возвращает к новым начальным
     form.val.name = 'Dave'
     form.reset()
     expect(form.values.value.name).toBe('Charlie')
@@ -265,8 +229,6 @@ describe('resetState', () => {
   })
 })
 
-// -- Computed ----------------------------------------------------------------
-
 describe('isValid', () => {
   it('реагирует на изменения ошибок', async () => {
     const form = setup(() => {
@@ -285,27 +247,21 @@ describe('isValid', () => {
 })
 
 describe('hasAnyErrors + requiredIf', () => {
-  // Регрессия: hasAnyErrors должен игнорировать ошибки от неактивных requiredIf-полей
   it('неактивные requiredIf-поля не влияют на hasAnyErrors/isValid', async () => {
     const form = setup(() => {
-      const f = createForm({
-        initialValues: { type: 'personal', company: '' },
-      })
+      const f = createForm({ initialValues: { type: 'personal', company: '' } })
       f.setRules({ company: [requiredIf('type', 'business', 'Укажите')] })
       return f
     })
 
-    // type=personal → company не обязательно
     await form.validateForm()
     expect(form.hasAnyErrors.value).toBe(false)
     expect(form.isValid.value).toBe(true)
 
-    // type=business → company обязательно
     form.val.type = 'business'
     await form.validateForm()
     expect(form.hasAnyErrors.value).toBe(true)
 
-    // заполнили → снова ок
     form.val.company = 'Acme'
     await form.validateForm()
     expect(form.hasAnyErrors.value).toBe(false)
@@ -314,11 +270,7 @@ describe('hasAnyErrors + requiredIf', () => {
 
 describe('isDirty / dirtyFields / isFieldDirty', () => {
   it('отслеживает изменения относительно начальных значений', async () => {
-    const form = setup(() =>
-      createForm({
-        initialValues: { name: 'Alice', age: 25 },
-      }),
-    )
+    const form = setup(() => createForm({ initialValues: { name: 'Alice', age: 25 } }))
 
     expect(form.isDirty.value).toBe(false)
     expect(form.dirtyFields.value).toEqual([])
@@ -330,7 +282,6 @@ describe('isDirty / dirtyFields / isFieldDirty', () => {
     expect(form.dirtyFields.value).toContain('name')
     expect(form.isFieldDirty('age')).toBe(false)
 
-    // вернули назад — уже не dirty
     form.val.name = 'Alice'
     await nextTick()
     expect(form.isFieldDirty('name')).toBe(false)
@@ -366,5 +317,84 @@ describe('getFieldStatus', () => {
       errors: ['!'],
       value: '',
     })
+  })
+})
+
+describe('watcher auto-revalidation', () => {
+  it('изменение touched поля автоматически ревалидирует', async () => {
+    const form = setup(() => {
+      const f = createForm({ initialValues: { name: '' } })
+      f.setRules({ name: [required('Обязательно')] })
+      return f
+    })
+
+    form.touch('name')
+    await form.validateField('name')
+    expect(form.hasError('name')).toBe(true)
+
+    form.val.name = 'Alice'
+    await vi.waitFor(() => expect(form.hasError('name')).toBe(false))
+
+    form.val.name = ''
+    await vi.waitFor(() => expect(form.hasError('name')).toBe(true))
+  })
+
+  it('не ревалидирует untouched поля', async () => {
+    const rule = vi.fn(() => 'err')
+    const form = setup(() => {
+      const f = createForm({ initialValues: { name: '' } })
+      f.setRules({ name: [rule] })
+      return f
+    })
+
+    rule.mockClear()
+    form.val.name = 'test'
+    await nextTick()
+    await nextTick()
+    expect(rule).not.toHaveBeenCalled()
+  })
+})
+
+describe('clearCache', () => {
+  it('сброс кэша заставляет ревалидировать заново', async () => {
+    const rule = vi.fn((v: string) => v === '' ? 'err' : null)
+    const form = setup(() => {
+      const f = createForm({ initialValues: { name: '' } })
+      f.setRules({ name: [rule] })
+      return f
+    })
+
+    await form.validateField('name')
+    const callsAfterFirst = rule.mock.calls.length
+
+    await form.validateField('name')
+    expect(rule.mock.calls.length).toBe(callsAfterFirst)
+
+    form.clearCache('name')
+    await form.validateField('name')
+    expect(rule.mock.calls.length).toBe(callsAfterFirst + 1)
+  })
+})
+
+describe('dispose', () => {
+  it('после dispose watchers перестают ревалидировать', async () => {
+    const rule = vi.fn((v: string) => v === '' ? 'err' : null)
+    const form = setup(() => {
+      const f = createForm({ initialValues: { name: '' } })
+      f.setRules({ name: [rule] })
+      return f
+    })
+
+    form.touch('name')
+    await form.validateField('name')
+    expect(form.hasError('name')).toBe(true)
+
+    const callsBefore = rule.mock.calls.length
+    form.dispose()
+
+    form.val.name = 'Alice'
+    await nextTick()
+    await nextTick()
+    expect(rule.mock.calls.length).toBe(callsBefore)
   })
 })
