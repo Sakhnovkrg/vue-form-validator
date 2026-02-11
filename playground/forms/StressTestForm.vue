@@ -160,7 +160,10 @@ const {
       eventType: r.required(t('stress.v.required')),
       eventDate: r.required(t('stress.v.required')).custom((val: string) => {
         if (!val) return true
-        return new Date(val) > new Date() ? true : t('stress.v.notInPast')
+        const minDate = new Date()
+        minDate.setDate(minDate.getDate() + 7)
+        minDate.setHours(0, 0, 0, 0)
+        return new Date(val) >= minDate ? true : t('stress.v.minWeekAhead')
       }),
       budget: r
         .required(t('stress.v.required'))
@@ -227,7 +230,9 @@ const {
   {
     async onSubmit(formValues) {
       await new Promise(r => setTimeout(r, 1000))
-      alert('OK!\n' + JSON.stringify(formValues, null, 2).slice(0, 500) + '...')
+      // eslint-disable-next-line no-console
+      console.log('Form submitted:', formValues)
+      alert('OK! (full data in console)')
     },
   }
 )
@@ -581,8 +586,7 @@ function addAddress() {
 
         <div v-if="values.accountType === 'enterprise'">
           <label class="block text-sm font-medium text-gray-700 mb-1"
-            >{{ t('stress.f.bin') }}
-            <span class="text-red-500">*</span></label
+            >{{ t('stress.f.bin') }} <span class="text-red-500">*</span></label
           >
           <input
             v-model="values.bin"

@@ -247,6 +247,7 @@
       "fileCount": "1 to 5 files",
       "urlFormat": "Must start with http:// or https://",
       "notInPast": "Date cannot be in the past",
+      "minWeekAhead": "Event must be at least 1 week from today",
       "deadLink": "Domain not found (try not 'deadlink')",
       "pickNotification": "Pick at least one channel",
       "mustAgree": "You must agree",
