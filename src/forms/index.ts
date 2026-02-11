@@ -23,14 +23,17 @@ export function createForm<T extends Record<string, any>>(
  * @param options - Опциональная конфигурация формы (колбэки onSubmit, onClear)
  * @returns Экземпляр формы с реактивным состоянием и методами валидации
  */
-export function createForm<T extends Record<string, any>>(
+export function createForm<
+  T extends Record<string, any>,
+  R extends FormRules<T> = FormRules<T>,
+>(
   initialValues: T,
   rulesOrBuilder:
     | ((
         _r: ReturnType<typeof createRules>,
         _define: ReturnType<typeof defineRules<T>>
-      ) => FormRules<T>)
-    | ComputedRef<FormRules<T>>,
+      ) => R)
+    | ComputedRef<R>,
   options?: Omit<FormOptions<T>, 'initialValues'>
 ): ReturnType<typeof createFormInternal<T>>
 

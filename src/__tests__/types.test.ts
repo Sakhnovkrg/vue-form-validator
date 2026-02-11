@@ -1,6 +1,7 @@
 import { describe, it, expectTypeOf } from 'vitest'
-import { effectScope } from 'vue'
+import { effectScope, computed } from 'vue'
 import { createForm } from '../forms/core'
+import { createForm as createFormPublic } from '../forms/index'
 import { required, between } from '../rules/basic'
 import { arrayMinLength } from '../rules/array'
 
@@ -181,6 +182,30 @@ describe('getValues возвращает T', () => {
     expectTypeOf(v.name).toBeString()
     expectTypeOf(v.age).toBeNumber()
     expectTypeOf(v.tags).toEqualTypeOf<string[]>()
+  })
+})
+
+describe('createForm с computed правилами для подмножества полей', () => {
+  it('принимает computed с неполным набором правил', () => {
+    scope.run(() => {
+      const rules = computed(() => ({
+        email: [required('Required')],
+      }))
+      // Не должно быть TS ошибки: правила только для email, хотя форма имеет name, age, email
+      const form = createFormPublic({ name: '', age: 0, email: '' }, rules)
+      expectTypeOf(form.val.name).toBeString()
+      expectTypeOf(form.val.email).toBeString()
+    })
+  })
+
+  it('принимает callback с неполным набором правил', () => {
+    scope.run(() => {
+      // Callback тоже должен позволять вернуть подмножество
+      const form = createFormPublic({ name: '', age: 0, email: '' }, r => ({
+        email: r.required().email(),
+      }))
+      expectTypeOf(form.val.name).toBeString()
+    })
   })
 })
 
