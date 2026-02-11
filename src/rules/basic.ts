@@ -30,7 +30,10 @@ export function required(
  * @param msg - Сообщение об ошибке
  * @returns Правило валидации
  */
-export function minLength(len: number, msg?: MaybeRefOrGetter<string>): Rule<string> {
+export function minLength(
+  len: number,
+  msg?: MaybeRefOrGetter<string>
+): Rule<string> {
   if (len < 0) throw new Error('Minimum length cannot be negative')
 
   return v => {
@@ -47,7 +50,10 @@ export function minLength(len: number, msg?: MaybeRefOrGetter<string>): Rule<str
  * @param msg - Сообщение об ошибке
  * @returns Правило валидации
  */
-export function maxLength(len: number, msg?: MaybeRefOrGetter<string>): Rule<string> {
+export function maxLength(
+  len: number,
+  msg?: MaybeRefOrGetter<string>
+): Rule<string> {
   if (len < 0) throw new Error('Maximum length cannot be negative')
 
   return v => {
@@ -61,7 +67,9 @@ export function maxLength(len: number, msg?: MaybeRefOrGetter<string>): Rule<str
  * @param msg - Сообщение об ошибке
  * @returns Правило валидации
  */
-export function email(msg: MaybeRefOrGetter<string> = 'Invalid email address'): Rule<string> {
+export function email(
+  msg: MaybeRefOrGetter<string> = 'Invalid email address'
+): Rule<string> {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return v => {
     const message = resolveMessage(msg)
@@ -156,7 +164,10 @@ export function oneOf(
  * @param msg - Сообщение об ошибке
  * @returns Правило валидации
  */
-export function minValue(min: number, msg?: MaybeRefOrGetter<string>): Rule<string | number> {
+export function minValue(
+  min: number,
+  msg?: MaybeRefOrGetter<string>
+): Rule<string | number> {
   return v => {
     if (v === null || v === undefined || v === '') return null
     const num = Number(v)
@@ -171,7 +182,10 @@ export function minValue(min: number, msg?: MaybeRefOrGetter<string>): Rule<stri
  * @param msg - Сообщение об ошибке
  * @returns Правило валидации
  */
-export function maxValue(max: number, msg?: MaybeRefOrGetter<string>): Rule<string | number> {
+export function maxValue(
+  max: number,
+  msg?: MaybeRefOrGetter<string>
+): Rule<string | number> {
   return v => {
     if (v === null || v === undefined || v === '') return null
     const num = Number(v)

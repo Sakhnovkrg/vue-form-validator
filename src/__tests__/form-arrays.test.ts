@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { effectScope } from 'vue'
 import { createForm } from '../forms/core'
-import { required, email } from '../rules/basic'
+import { required } from '../rules/basic'
 import { arrayMinLength, arrayRequired } from '../rules/array'
 import type { FormInstance } from '../forms/types'
 
@@ -15,7 +15,7 @@ afterEach(() => _scope?.stop())
 describe('addArrayItem / removeArrayItem', () => {
   it('добавляет и удаляет элементы', () => {
     const form = setup(() =>
-      createForm({ initialValues: { items: [] as string[] } }),
+      createForm({ initialValues: { items: [] as string[] } })
     )
 
     form.addArrayItem('items', 'a')
@@ -81,7 +81,7 @@ describe('toggleArrayItem', () => {
 describe('arrayIncludes', () => {
   it('проверяет наличие элемента', () => {
     const form = setup(() =>
-      createForm({ initialValues: { tags: ['vue', 'react'] as string[] } }),
+      createForm({ initialValues: { tags: ['vue', 'react'] as string[] } })
     )
     expect(form.arrayIncludes('tags', 'vue')).toBe(true)
     expect(form.arrayIncludes('tags', 'angular')).toBe(false)
@@ -96,7 +96,7 @@ describe('arrayPath / objectPath', () => {
           contacts: [{ name: '', email: '' }],
           address: { street: '', city: '' },
         },
-      }),
+      })
     )
 
     expect(form.arrayPath('contacts', 0, 'name')).toBe('contacts.0.name')
@@ -132,7 +132,9 @@ describe('wildcard-правила', () => {
       return f
     })
 
-    expect(await form.validateField('contacts.0.email' as any)).toEqual(['Email обязателен'])
+    expect(await form.validateField('contacts.0.email' as any)).toEqual([
+      'Email обязателен',
+    ])
     expect(await form.validateField('contacts.0.name' as any)).toEqual([])
   })
 
@@ -174,7 +176,7 @@ describe('wildcard-правила', () => {
 describe('nested touch / clear / reset', () => {
   it('touch помечает конкретное вложенное поле', () => {
     const form = setup(() =>
-      createForm({ initialValues: { contacts: [{ name: '' }] } }),
+      createForm({ initialValues: { contacts: [{ name: '' }] } })
     )
     form.touch('contacts.0.name' as any)
     expect(form.isTouched('contacts.0.name' as any)).toBe(true)

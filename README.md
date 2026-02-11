@@ -240,17 +240,12 @@ const form = createForm(
 
 <template>
   <form @submit.prevent="form.submit">
-    <!-- Два способа доступа к значениям (оба одинаково реактивные): -->
-
-    <!-- Способ 1: Через .values (стандартный ref) -->
+    <!-- .values и .val — взаимозаменяемы, .val удобнее в script -->
     <input v-model="form.values.username" @blur="form.touch('username')" />
+    <span v-if="form.hasError('username')">{{ form.error('username') }}</span>
 
-    <!-- Способ 2: Через .val (удобнее в script, в template одинаково) -->
-    <input v-model="form.val.username" @blur="form.touch('username')" />
-
-    <span v-if="form.hasError('username')">
-      {{ form.error('username') }}
-    </span>
+    <input v-model="form.values.email" @blur="form.touch('email')" />
+    <span v-if="form.hasError('email')">{{ form.error('email') }}</span>
 
     <!-- Остальные поля... -->
   </form>
@@ -380,10 +375,10 @@ form.error(form.objectPath('address', 'street'))
 
 #### Продвинутые методы
 
-| Метод                | Описание                                                     |
-| -------------------- | ------------------------------------------------------------ |
-| `clearCache(field?)` | Очистить кэш валидации (поля или весь кэш)                   |
-| `dispose()`          | Остановить watchers и очистить ресурсы (авто при unmount)     |
+| Метод                | Описание                                                  |
+| -------------------- | --------------------------------------------------------- |
+| `clearCache(field?)` | Очистить кэш валидации (поля или весь кэш)                |
+| `dispose()`          | Остановить watchers и очистить ресурсы (авто при unmount) |
 
 ## 🛠️ Встроенные правила валидации
 
@@ -458,27 +453,21 @@ r.custom((value, allValues) => {
 ### Конфигурация
 
 ```typescript
-import { computed } from 'vue'
-import { createForm, createRules } from '@sakhnovkrg/vue-form-validator'
+import { createForm } from '@sakhnovkrg/vue-form-validator'
 
 const form = createForm(
   {
     avatar: null as File | null,
     documents: null as File[] | null,
   },
-  computed(() => {
-    const r = createRules()
-
-    return {
-      avatar: [
-        r.fileRequired(),
-        r.fileType(['.jpg', '.jpeg', '.png']),
-        r.fileSize(3 * 1024 * 1024),
-      ],
+  (r, define) =>
+    define({
+      avatar: r
+        .fileRequired()
+        .fileType(['.jpg', '.jpeg', '.png'])
+        .fileSize(3 * 1024 * 1024),
       documents: r.fileRequired().fileCount(1, 5),
-    }
-  }),
-  {}
+    })
 )
 ```
 
@@ -514,24 +503,23 @@ const form = createForm(
 ### Динамические массивы
 
 ```typescript
+interface Contact {
+  name: string
+  email: string
+  role: string
+}
+
 const form = createForm(
   {
     teamName: '',
-    contacts: [{ name: '', email: '', role: '' }] as Array<{
-      name: string
-      email: string
-      role: string
-    }>,
+    contacts: [] as Contact[],
   },
-  computed(() => {
-    const r = createRules()
-    return {
-      teamName: r.required(),
-      contacts: r.arrayMinLength(1),
-      'contacts.*.name': r.required(),
-      'contacts.*.email': r.required().email(),
-      'contacts.*.role': r.required(),
-    }
+  r => ({
+    teamName: r.required(),
+    contacts: r.arrayMinLength(1),
+    'contacts.*.name': r.required(),
+    'contacts.*.email': r.required().email(),
+    'contacts.*.role': r.required(),
   })
 )
 
@@ -570,31 +558,16 @@ form.removeArrayItem('contacts', index)
 const form = createForm(
   {
     name: '',
-    address: {
-      street: '',
-      city: '',
-      zipCode: '',
-    },
-    profile: {
-      bio: '',
-      website: '',
-    },
+    address: { street: '', city: '', zipCode: '' },
+    profile: { bio: '', website: '' },
   },
-  computed(() => {
-    const r = createRules()
-    return {
-      name: r.required(),
-      'address.street': r.required(),
-      'address.city': r.required(),
-      'address.zipCode': r
-        .required()
-        .regex(/^\d{5}$/, 'ZIP code must be 5 digits'),
-      'profile.bio': r.maxLength(200),
-      'profile.website': r.regex(
-        /^https?:\/\/.+/,
-        'Website must start with http://'
-      ),
-    }
+  r => ({
+    name: r.required(),
+    'address.street': r.required(),
+    'address.city': r.required(),
+    'address.zipCode': r.required().regex(/^\d{5}$/, 'ZIP: 5 цифр'),
+    'profile.bio': r.maxLength(200),
+    'profile.website': r.regex(/^https?:\/\/.+/, 'Начните с http://'),
   })
 )
 ```
@@ -604,23 +577,24 @@ const form = createForm(
 ```vue
 <template>
   <fieldset>
-    <legend>Address</legend>
+    <legend>Адрес</legend>
 
+    <!-- Строковые пути — просто и наглядно -->
     <input
       v-model="form.values.address.street"
-      @blur="form.touch(form.objectPath('address', 'street'))"
+      @blur="form.touch('address.street')"
     />
-    <span v-if="form.hasError(form.objectPath('address', 'street'))">
-      {{ form.error(form.objectPath('address', 'street')) }}
-    </span>
+    <span v-if="form.hasError('address.street')">{{
+      form.error('address.street')
+    }}</span>
 
-    <!-- Альтернативный синтаксис со строковыми путями -->
+    <!-- objectPath() — с автодополнением TypeScript -->
     <input
       v-model="form.values.address.city"
-      @blur="form.touch('address.city')"
+      @blur="form.touch(form.objectPath('address', 'city'))"
     />
-    <span v-if="form.hasError('address.city')">
-      {{ form.error('address.city') }}
+    <span v-if="form.hasError(form.objectPath('address', 'city'))">
+      {{ form.error(form.objectPath('address', 'city')) }}
     </span>
   </fieldset>
 </template>
@@ -642,17 +616,15 @@ createForm({ type: '', companyName: '' }, (r, define) =>
 ### Асинхронная проверка имени пользователя
 
 ```typescript
-async function checkUsername(username: string): Promise<boolean> {
-  const response = await fetch(`/api/users/${username}`)
-  return !response.ok // Доступно, если не найден
-}
-
 createForm({ username: '' }, (r, define) =>
   define({
     username: r
       .required()
       .minLength(3)
-      .remote(checkUsername, 'Имя пользователя уже занято'),
+      .remote(
+        async name => !(await fetch(`/api/users/${name}`)).ok,
+        'Имя пользователя уже занято'
+      ),
   })
 )
 ```
@@ -670,135 +642,102 @@ createForm({ startDate: '', endDate: '' }, (r, define) =>
 
 ### Универсальная форма для создания и редактирования
 
-```typescript
-import { createForm } from '@sakhnovkrg/vue-form-validator'
-
-interface User {
-  id?: number
-  name: string
-  email: string
-  avatar?: File | null
-}
-
-// Универсальная форма для create/update
-function createUserForm(isEditMode: boolean = false) {
-  return createForm(
-    {
-      name: '',
-      email: '',
-      avatar: null as File | null,
-    },
-    (r, define) =>
-      define({
-        name: r.required().minLength(2),
-        email: r.required().email(),
-        avatar: [
-          r.fileType(['.jpg', '.jpeg', '.png']),
-          r.fileSize(3 * 1024 * 1024),
-        ],
-      }),
-    {
-      async onSubmit(values) {
-        const formData = new FormData()
-        formData.append('name', values.name)
-        formData.append('email', values.email)
-        if (values.avatar) {
-          formData.append('avatar', values.avatar)
-        }
-
-        // Определяем URL и метод в зависимости от режима
-        const url = isEditMode ? `/api/users/${currentUserId}` : '/api/users'
-        const method = isEditMode ? 'PUT' : 'POST'
-
-        const response = await fetch(url, { method, body: formData })
-
-        if (!response.ok) {
-          const errors = await response.json()
-          form.setErrors(errors.fieldErrors)
-          return
-        }
-
-        const userData = await response.json()
-
-        if (isEditMode) {
-          console.log('User updated:', userData)
-        } else {
-          console.log('User created:', userData)
-          // Перенаправление на страницу редактирования
-          await router.push(`/users/${userData.id}/edit`)
-        }
-      },
-    }
-  )
-}
-
-// Функция для загрузки данных при редактировании
-async function loadUserForEdit(
-  form: ReturnType<typeof createUserForm>,
-  userId: number
-) {
-  try {
-    const userData: User = await fetch(`/api/users/${userId}`).then(r =>
-      r.json()
-    )
-
-    form.setValues({
-      name: userData.name,
-      email: userData.email,
-      // avatar остается null - файлы не загружаются из API
-    })
-  } catch (error) {
-    console.error('Failed to load user:', error)
-  }
-}
-```
+Одна и та же форма для создания и редактирования. Ключевой момент — при загрузке данных используйте `reset()`, а не `setValues()`, чтобы обновить baseline и `isDirty` оставался `false`.
 
 ```vue
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
+import { createForm } from '@sakhnovkrg/vue-form-validator'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
 
-// Определяем режим работы формы
 const userId = computed(() =>
   route.params.id ? Number(route.params.id) : null
 )
 const isEditMode = computed(() => !!userId.value)
-const pageTitle = computed(() =>
-  isEditMode.value ? 'Редактировать пользователя' : 'Создать пользователя'
+
+const form = createForm(
+  {
+    name: '',
+    email: '',
+    avatar: null as File | null,
+  },
+  (r, define) =>
+    define({
+      name: r.required().minLength(2),
+      email: r.required().email(),
+      avatar: [
+        r.fileType(['.jpg', '.jpeg', '.png']),
+        r.fileSize(3 * 1024 * 1024),
+      ],
+    }),
+  {
+    async onSubmit(values) {
+      const formData = new FormData()
+      formData.append('name', values.name)
+      formData.append('email', values.email)
+      if (values.avatar) formData.append('avatar', values.avatar)
+
+      const url = isEditMode.value ? `/api/users/${userId.value}` : '/api/users'
+      const method = isEditMode.value ? 'PUT' : 'POST'
+
+      const response = await fetch(url, { method, body: formData })
+
+      if (!response.ok) {
+        const data = await response.json()
+        form.setErrors(data.fieldErrors)
+        return
+      }
+
+      const userData = await response.json()
+      if (!isEditMode.value) {
+        await router.push(`/users/${userData.id}/edit`)
+      }
+    },
+  }
 )
 
-// Создаем форму
-let currentUserId: number | null = null
-const form = createUserForm(isEditMode.value)
-
-// Загружаем данные при редактировании
+// Загрузка данных: reset() обновляет baseline, форма остаётся чистой
 onMounted(async () => {
-  if (isEditMode.value && userId.value) {
-    currentUserId = userId.value
-    await loadUserForEdit(form, userId.value)
+  if (userId.value) {
+    const { name, email } = await fetch(`/api/users/${userId.value}`).then(r =>
+      r.json()
+    )
+    form.reset({ name, email })
   }
 })
 </script>
 
 <template>
   <form @submit.prevent="form.submit">
-    <h2>{{ pageTitle }}</h2>
+    <input
+      v-model="form.values.name"
+      @blur="form.touch('name')"
+      placeholder="Имя"
+    />
+    <span v-if="form.hasError('name')">{{ form.error('name') }}</span>
 
-    <!-- Поля формы остаются теми же для create/update -->
-    <!-- ... -->
+    <input
+      v-model="form.values.email"
+      @blur="form.touch('email')"
+      placeholder="Email"
+    />
+    <span v-if="form.hasError('email')">{{ form.error('email') }}</span>
 
-    <button type="submit" :disabled="!form.isValid || form.isSubmitting">
+    <input type="file" @change="form.file.avatar.handler" />
+
+    <button
+      type="submit"
+      :disabled="!form.isDirty || !form.isValid || form.isSubmitting"
+    >
       {{
         form.isSubmitting
-          ? isEditMode
-            ? 'Сохранение...'
-            : 'Создание...'
+          ? 'Сохранение...'
           : isEditMode
-            ? 'Сохранить изменения'
-            : 'Создать пользователя'
+            ? 'Сохранить'
+            : 'Создать'
       }}
     </button>
   </form>
@@ -834,37 +773,32 @@ if (form.hasError('username')) {
 }
 ```
 
-Пример обработки ошибок сервера:
+Типичный паттерн обработки серверных ошибок — внутри `onSubmit`:
 
 ```typescript
-async function handleSubmit(values: FormValues) {
-  try {
-    const response = await fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
-    })
+const form = createForm(
+  { email: '', username: '' },
+  (r, define) =>
+    define({ email: r.required().email(), username: r.required() }),
+  {
+    async onSubmit(values) {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      })
 
-    if (!response.ok) {
-      const errorData = await response.json()
-
-      // Сервер возвращает: { fieldErrors: { email: ['Уже существует'] } }
-      if (errorData.fieldErrors) {
-        form.setErrors(errorData.fieldErrors)
+      if (!res.ok) {
+        // Сервер возвращает: { fieldErrors: { email: ['Уже существует'] } }
+        const { fieldErrors } = await res.json()
+        if (fieldErrors) form.setErrors(fieldErrors)
         return
       }
 
-      // Общая ошибка - показать через toast или alert
-      throw new Error(errorData.message || 'Ошибка сервера')
-    }
-
-    // Успешная отправка
-    const userData = await response.json()
-    console.log('Пользователь создан:', userData)
-  } catch (error) {
-    console.error('Ошибка:', error)
+      console.log('Создан:', await res.json())
+    },
   }
-}
+)
 ```
 
 ## ⚡ Кэширование валидации

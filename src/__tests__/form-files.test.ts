@@ -60,7 +60,7 @@ describe('createFileHelpers', () => {
     const event = {
       target: {
         multiple: false,
-        files: { 0: file, length: 1, item: (i: number) => file } as any,
+        files: { 0: file, length: 1, item: (_i: number) => file } as any,
       },
     } as unknown as Event
 
@@ -78,12 +78,20 @@ describe('createFileHelpers', () => {
     const f1 = new File(['a'], 'a.txt')
     const f2 = new File(['b'], 'b.txt')
     const fileList = [f1, f2] as any
-    fileList[Symbol.iterator] = function* () { yield f1; yield f2 }
+    fileList[Symbol.iterator] = function* () {
+      yield f1
+      yield f2
+    }
 
     const event = {
       target: {
         multiple: true,
-        files: { 0: f1, 1: f2, length: 2, [Symbol.iterator]: fileList[Symbol.iterator] } as any,
+        files: {
+          0: f1,
+          1: f2,
+          length: 2,
+          [Symbol.iterator]: fileList[Symbol.iterator],
+        } as any,
       },
     } as unknown as Event
 
@@ -117,7 +125,11 @@ describe('createFileHelpers', () => {
     const ctx = makeContext({ avatar: null })
     const helpers = createFileHelpers(ctx)
 
-    const inputEl = { value: 'C:\\fakepath\\photo.png', multiple: false, files: { 0: new File(['x'], 'p.png'), length: 1 } as any }
+    const inputEl = {
+      value: 'C:\\fakepath\\photo.png',
+      multiple: false,
+      files: { 0: new File(['x'], 'p.png'), length: 1 } as any,
+    }
     helpers.avatar.handler({ target: inputEl } as unknown as Event)
 
     helpers.avatar.clear()

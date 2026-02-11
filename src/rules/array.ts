@@ -8,7 +8,10 @@ import { resolveMessage } from '../utils/helpers'
  * @param msg - Сообщение об ошибке
  * @returns Правило валидации
  */
-export function arrayMinLength(min: number, msg?: MaybeRefOrGetter<string>): Rule<any[]> {
+export function arrayMinLength(
+  min: number,
+  msg?: MaybeRefOrGetter<string>
+): Rule<any[]> {
   return arr => {
     if (!Array.isArray(arr)) return null
     const message = resolveMessage(msg) || `Minimum ${min} items required`
@@ -36,7 +39,10 @@ export function arrayRequired(msg?: MaybeRefOrGetter<string>): Rule<any[]> {
  * @param msg - Сообщение об ошибке
  * @returns Правило валидации
  */
-export function arrayMaxLength(max: number, msg?: MaybeRefOrGetter<string>): Rule<any[]> {
+export function arrayMaxLength(
+  max: number,
+  msg?: MaybeRefOrGetter<string>
+): Rule<any[]> {
   return arr => {
     if (!Array.isArray(arr)) return null
     const message = resolveMessage(msg) || `Maximum ${max} items allowed`

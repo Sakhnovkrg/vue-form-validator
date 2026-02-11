@@ -8,11 +8,7 @@ export function deepEqual(a: unknown, b: unknown): boolean {
     return false
   }
 
-  if (
-    typeof File !== 'undefined' &&
-    a instanceof File &&
-    b instanceof File
-  ) {
+  if (typeof File !== 'undefined' && a instanceof File && b instanceof File) {
     return (
       a.name === b.name &&
       a.size === b.size &&

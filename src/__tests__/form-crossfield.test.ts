@@ -154,7 +154,7 @@ describe('sameAs внутри wildcard-правил', () => {
 
     form.val.contacts[0].email = 'new@b.com'
     await vi.waitFor(() =>
-      expect(form.error('contacts.0.confirmEmail' as any)).toBe('Не совпадает'),
+      expect(form.error('contacts.0.confirmEmail' as any)).toBe('Не совпадает')
     )
   })
 

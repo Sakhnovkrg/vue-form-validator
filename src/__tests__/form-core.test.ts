@@ -14,7 +14,9 @@ afterEach(() => _scope?.stop())
 
 describe('createForm', () => {
   it('инициализируется с начальными значениями и чистым состоянием', () => {
-    const form = setup(() => createForm({ initialValues: { name: '', age: 0 } }))
+    const form = setup(() =>
+      createForm({ initialValues: { name: '', age: 0 } })
+    )
 
     expect(form.values.value).toEqual({ name: '', age: 0 })
     expect(form.isValid.value).toBe(true)
@@ -110,7 +112,7 @@ describe('submit', () => {
           submittingDuringCallback = form.isSubmitting.value
           await new Promise(r => setTimeout(r, 10))
         },
-      }),
+      })
     )
 
     expect(form.isSubmitting.value).toBe(false)
@@ -122,7 +124,9 @@ describe('submit', () => {
 
 describe('setValues / getValues', () => {
   it('обновляет и возвращает глубокую копию', () => {
-    const form = setup(() => createForm({ initialValues: { name: '', age: 0 } }))
+    const form = setup(() =>
+      createForm({ initialValues: { name: '', age: 0 } })
+    )
 
     form.setValues({ name: 'Bob', age: 30 })
     expect(form.values.value.name).toBe('Bob')
@@ -130,7 +134,9 @@ describe('setValues / getValues', () => {
   })
 
   it('getValues возвращает deep copy', () => {
-    const form = setup(() => createForm({ initialValues: { tags: ['a', 'b'] } }))
+    const form = setup(() =>
+      createForm({ initialValues: { tags: ['a', 'b'] } })
+    )
 
     const copy = form.getValues()
     copy.tags.push('c')
@@ -163,7 +169,7 @@ describe('resetErrors', () => {
 describe('clear', () => {
   it('сбрасывает значения к "пустым" по типу', () => {
     const form = setup(() =>
-      createForm({ initialValues: { name: 'Alice', count: 5, tags: ['a'] } }),
+      createForm({ initialValues: { name: 'Alice', count: 5, tags: ['a'] } })
     )
 
     form.val.name = 'Bob'
@@ -270,7 +276,9 @@ describe('hasAnyErrors + requiredIf', () => {
 
 describe('isDirty / dirtyFields / isFieldDirty', () => {
   it('отслеживает изменения относительно начальных значений', async () => {
-    const form = setup(() => createForm({ initialValues: { name: 'Alice', age: 25 } }))
+    const form = setup(() =>
+      createForm({ initialValues: { name: 'Alice', age: 25 } })
+    )
 
     expect(form.isDirty.value).toBe(false)
     expect(form.dirtyFields.value).toEqual([])
@@ -291,7 +299,9 @@ describe('isDirty / dirtyFields / isFieldDirty', () => {
 
 describe('touchedFields', () => {
   it('перечисляет только touched поля', () => {
-    const form = setup(() => createForm({ initialValues: { name: '', email: '' } }))
+    const form = setup(() =>
+      createForm({ initialValues: { name: '', email: '' } })
+    )
     form.touch('name')
     expect(form.touchedFields.value).toContain('name')
     expect(form.touchedFields.value).not.toContain('email')
@@ -357,7 +367,7 @@ describe('watcher auto-revalidation', () => {
 
 describe('clearCache', () => {
   it('сброс кэша заставляет ревалидировать заново', async () => {
-    const rule = vi.fn((v: string) => v === '' ? 'err' : null)
+    const rule = vi.fn((v: string) => (v === '' ? 'err' : null))
     const form = setup(() => {
       const f = createForm({ initialValues: { name: '' } })
       f.setRules({ name: [rule] })
@@ -378,7 +388,7 @@ describe('clearCache', () => {
 
 describe('dispose', () => {
   it('после dispose watchers перестают ревалидировать', async () => {
-    const rule = vi.fn((v: string) => v === '' ? 'err' : null)
+    const rule = vi.fn((v: string) => (v === '' ? 'err' : null))
     const form = setup(() => {
       const f = createForm({ initialValues: { name: '' } })
       f.setRules({ name: [rule] })

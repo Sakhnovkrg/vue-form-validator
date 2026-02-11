@@ -2,8 +2,17 @@ import { describe, it, expect, vi } from 'vitest'
 import { ref, computed } from 'vue'
 import { deepEqual, deepClone } from '../utils/deep'
 import { debounce } from '../utils/debounce'
-import { setNestedValue, getNestedValue, expandWildcardPaths } from '../utils/nested'
-import { resolveMessage, toFileArray, formatFileSize, defineRules } from '../utils/helpers'
+import {
+  setNestedValue,
+  getNestedValue,
+  expandWildcardPaths,
+} from '../utils/nested'
+import {
+  resolveMessage,
+  toFileArray,
+  formatFileSize,
+  defineRules,
+} from '../utils/helpers'
 import { normalizeFormRules } from '../forms/normalizeRules'
 
 describe('deepEqual', () => {
@@ -41,7 +50,9 @@ describe('deepEqual', () => {
 
   it('Date', () => {
     expect(deepEqual(new Date('2024-01-01'), new Date('2024-01-01'))).toBe(true)
-    expect(deepEqual(new Date('2024-01-01'), new Date('2025-01-01'))).toBe(false)
+    expect(deepEqual(new Date('2024-01-01'), new Date('2025-01-01'))).toBe(
+      false
+    )
   })
 
   it('File — сравнение по name/size/lastModified', () => {
@@ -146,7 +157,7 @@ describe('expandWildcardPaths', () => {
   it('раскрывает * по длине массива', () => {
     const result = expandWildcardPaths(
       { 'items.*.name': [rule] },
-      { items: [{}, {}, {}] },
+      { items: [{}, {}, {}] }
     )
     expect(Object.keys(result)).toEqual([
       'items.0.name',
@@ -156,8 +167,12 @@ describe('expandWildcardPaths', () => {
   })
 
   it('пустой/отсутствующий массив — ничего не раскрывает', () => {
-    expect(Object.keys(expandWildcardPaths({ 'a.*.x': [rule] }, { a: [] }))).toEqual([])
-    expect(Object.keys(expandWildcardPaths({ 'a.*.x': [rule] }, {}))).toEqual([])
+    expect(
+      Object.keys(expandWildcardPaths({ 'a.*.x': [rule] }, { a: [] }))
+    ).toEqual([])
+    expect(Object.keys(expandWildcardPaths({ 'a.*.x': [rule] }, {}))).toEqual(
+      []
+    )
   })
 })
 

@@ -35,8 +35,14 @@ export interface SimpleRuleChainHelpers {
     _msg?: MaybeRefOrGetter<string>
   ): RuleChain<string | number>
   oneOf(_list: any[], _msg?: MaybeRefOrGetter<string>): RuleChain<any>
-  minValue(_min: number, _msg?: MaybeRefOrGetter<string>): RuleChain<string | number>
-  maxValue(_max: number, _msg?: MaybeRefOrGetter<string>): RuleChain<string | number>
+  minValue(
+    _min: number,
+    _msg?: MaybeRefOrGetter<string>
+  ): RuleChain<string | number>
+  maxValue(
+    _max: number,
+    _msg?: MaybeRefOrGetter<string>
+  ): RuleChain<string | number>
   fileRequired(_msg?: MaybeRefOrGetter<string>): RuleChain<File | File[] | null>
   fileSize(
     _maxBytes: number,

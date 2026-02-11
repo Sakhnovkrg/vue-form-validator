@@ -188,9 +188,7 @@ export class FormStateManager<T extends Record<string, any>> {
   reset(newValues?: Partial<T>) {
     if (newValues) {
       Object.keys(newValues).forEach(key => {
-        ;(this.initialValues as any)[key] = deepClone(
-          newValues[key as keyof T]
-        )
+        ;(this.initialValues as any)[key] = deepClone(newValues[key as keyof T])
       })
     }
 
@@ -263,7 +261,10 @@ export class FormStateManager<T extends Record<string, any>> {
     if (!fieldRules) return false
 
     // Собираем все requiredIf правила
-    const requiredIfMetas: Array<{ conditionField: string; conditionValue: any }> = []
+    const requiredIfMetas: Array<{
+      conditionField: string
+      conditionValue: any
+    }> = []
     for (const rule of fieldRules) {
       const meta = (rule as any).__requiredIf
       if (meta) {
@@ -354,7 +355,9 @@ export class FormStateManager<T extends Record<string, any>> {
       errors: toRef(() => this.errors) as Ref<Record<string, string[]>>,
       touched: toRef(() => this.touched) as Ref<Record<string, boolean>>,
       dirty: toRef(() => this.dirty) as Ref<Record<string, boolean>>,
-      isValidating: toRef(() => this.isValidating) as Ref<Record<string, boolean>>,
+      isValidating: toRef(() => this.isValidating) as Ref<
+        Record<string, boolean>
+      >,
     }
   }
 }

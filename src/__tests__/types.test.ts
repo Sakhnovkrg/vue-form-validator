@@ -17,7 +17,7 @@ function make() {
         contacts: [{ email: '', phone: '' }],
         address: { street: '', city: '' },
       },
-    }),
+    })
   )!
 }
 
@@ -32,8 +32,13 @@ describe('вывод типов из initialValues', () => {
   it('массивы и объекты', () => {
     const form = make()
     expectTypeOf(form.val.tags).toEqualTypeOf<string[]>()
-    expectTypeOf(form.val.contacts).toEqualTypeOf<{ email: string; phone: string }[]>()
-    expectTypeOf(form.val.address).toEqualTypeOf<{ street: string; city: string }>()
+    expectTypeOf(form.val.contacts).toEqualTypeOf<
+      { email: string; phone: string }[]
+    >()
+    expectTypeOf(form.val.address).toEqualTypeOf<{
+      street: string
+      city: string
+    }>()
   })
 
   it('values.value совпадает с T', () => {
@@ -187,7 +192,7 @@ describe('onSubmit типизирован по T', () => {
         onSubmit(values) {
           expectTypeOf(values).toEqualTypeOf<{ name: string; age: number }>()
         },
-      }),
+      })
     )
   })
 })

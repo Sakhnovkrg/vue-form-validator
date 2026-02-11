@@ -1,8 +1,21 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { effectScope, nextTick } from 'vue'
 import { createForm } from '../forms/core'
-import { required, minLength, maxLength, email, between, regex } from '../rules/basic'
-import { remote, custom, sameAs, requiredIf, dateAfter } from '../rules/advanced'
+import {
+  required,
+  minLength,
+  maxLength,
+  email,
+  between,
+  regex,
+} from '../rules/basic'
+import {
+  remote,
+  custom,
+  sameAs,
+  requiredIf,
+  dateAfter,
+} from '../rules/advanced'
 import { arrayMinLength } from '../rules/array'
 import type { FormInstance } from '../forms/types'
 
@@ -18,7 +31,12 @@ describe('гонка: clear() во время async-валидации', () => {
     vi.useFakeTimers()
 
     let resolve!: (ok: boolean) => void
-    const check = vi.fn(() => new Promise<boolean>(r => { resolve = r }))
+    const check = vi.fn(
+      () =>
+        new Promise<boolean>(r => {
+          resolve = r
+        })
+    )
 
     const form = setup(() => {
       const f = createForm({ initialValues: { username: '' } })
@@ -62,7 +80,15 @@ describe('custom() — sync vs async', () => {
     const form = setup(() => {
       const f = createForm({ initialValues: { code: '' } })
       f.setRules({
-        code: [custom(() => new Promise<boolean>(r => { resolve = r }), 'Нет')],
+        code: [
+          custom(
+            () =>
+              new Promise<boolean>(r => {
+                resolve = r
+              }),
+            'Нет'
+          ),
+        ],
       })
       return f
     })
@@ -80,10 +106,15 @@ describe('custom() — sync vs async', () => {
 describe('двойной submit', () => {
   it('второй вызов игнорируется пока первый выполняется', async () => {
     let resolveSubmit!: () => void
-    const onSubmit = vi.fn(() => new Promise<void>(r => { resolveSubmit = r }))
+    const onSubmit = vi.fn(
+      () =>
+        new Promise<void>(r => {
+          resolveSubmit = r
+        })
+    )
 
     const form = setup(() =>
-      createForm({ initialValues: { name: 'ok' }, onSubmit }),
+      createForm({ initialValues: { name: 'ok' }, onSubmit })
     )
 
     const first = form.submit()
@@ -159,7 +190,7 @@ describe('setErrors + validateForm', () => {
 describe('reset с новыми значениями + dirty', () => {
   it('dirty сравнивает с новыми начальными значениями', async () => {
     const form = setup(() =>
-      createForm({ initialValues: { name: 'Original' } }),
+      createForm({ initialValues: { name: 'Original' } })
     )
 
     form.reset({ name: 'New' })
@@ -199,7 +230,10 @@ describe('регистрация: полный цикл', () => {
         name: [required('Имя обязательно'), minLength(2, 'Минимум 2 символа')],
         email: [required('Email обязателен'), email('Невалидный email')],
         phone: [regex(/^\+?\d{10,15}$/, 'Невалидный телефон')],
-        password: [required('Пароль обязателен'), minLength(6, 'Минимум 6 символов')],
+        password: [
+          required('Пароль обязателен'),
+          minLength(6, 'Минимум 6 символов'),
+        ],
         confirm: [sameAs('password', 'Пароли не совпадают')],
         age: [between(18, 120, 'Возраст от 18 до 120')],
         type: [required()],
@@ -254,11 +288,13 @@ describe('регистрация: полный цикл', () => {
 
     await form.submit()
     expect(onSubmit).toHaveBeenCalledOnce()
-    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'Алексей',
-      email: 'alex@example.com',
-      tags: ['vue', 'typescript'],
-    }))
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Алексей',
+        email: 'alex@example.com',
+        tags: ['vue', 'typescript'],
+      })
+    )
 
     // requiredIf: переключаем на business
     form.val.type = 'business'
@@ -278,6 +314,142 @@ describe('регистрация: полный цикл', () => {
   })
 })
 
+describe('create/edit форма: паттерн переиспользования', () => {
+  function createUserForm(onSubmit: (values: any) => void | Promise<void>) {
+    return createForm({
+      initialValues: {
+        name: '',
+        email: '',
+        avatar: null as File | null,
+      },
+      onSubmit,
+    })
+  }
+
+  function applyUserRules(form: ReturnType<typeof createUserForm>) {
+    form.setRules({
+      name: [required('Имя обязательно'), minLength(2, 'Минимум 2')],
+      email: [required('Email обязателен'), email('Невалидный email')],
+    })
+  }
+
+  it('create: пустая форма → валидация → заполнение → submit', async () => {
+    const onSubmit = vi.fn()
+    const form = setup(() => {
+      const f = createUserForm(onSubmit)
+      applyUserRules(f)
+      return f
+    })
+
+    await form.submit()
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(form.hasError('name')).toBe(true)
+    expect(form.hasError('email')).toBe(true)
+
+    form.val.name = 'Алексей'
+    form.val.email = 'alex@test.com'
+
+    await form.submit()
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Алексей', email: 'alex@test.com' })
+    )
+  })
+
+  it('edit: загрузка данных через reset → isDirty=false', async () => {
+    const onSubmit = vi.fn()
+    const form = setup(() => {
+      const f = createUserForm(onSubmit)
+      applyUserRules(f)
+      return f
+    })
+
+    form.reset({ name: 'Иван', email: 'ivan@test.com' })
+
+    expect(form.val.name).toBe('Иван')
+    expect(form.val.email).toBe('ivan@test.com')
+    expect(form.isDirty.value).toBe(false)
+    expect(form.hasAnyErrors.value).toBe(false)
+  })
+
+  it('edit: изменение после загрузки → isDirty=true → submit', async () => {
+    const onSubmit = vi.fn()
+    const form = setup(() => {
+      const f = createUserForm(onSubmit)
+      applyUserRules(f)
+      return f
+    })
+
+    form.reset({ name: 'Иван', email: 'ivan@test.com' })
+
+    form.val.email = 'ivan-new@test.com'
+    await nextTick()
+    expect(form.isDirty.value).toBe(true)
+    expect(form.isFieldDirty('email')).toBe(true)
+    expect(form.isFieldDirty('name')).toBe(false)
+
+    await form.submit()
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Иван', email: 'ivan-new@test.com' })
+    )
+  })
+
+  it('edit: setErrors для серверных ошибок после submit', async () => {
+    const onSubmit = vi.fn(async (_values: any) => {
+      throw new Error('server')
+    })
+
+    const form = setup(() => {
+      const f = createUserForm(async values => {
+        await onSubmit(values)
+      })
+      applyUserRules(f)
+      return f
+    })
+
+    form.reset({ name: 'Иван', email: 'taken@test.com' })
+    form.val.name = 'Иван2'
+
+    await form.submit().catch(() => {})
+
+    form.setErrors({ email: ['Этот email уже занят'] })
+    expect(form.error('email')).toBe('Этот email уже занят')
+
+    await form.validateForm()
+    expect(form.hasError('email')).toBe(false)
+  })
+
+  it('edit: setValues делает форму dirty (неправильный паттерн для загрузки)', async () => {
+    const form = setup(() => {
+      const f = createUserForm(vi.fn())
+      applyUserRules(f)
+      return f
+    })
+
+    form.setValues({ name: 'Loaded', email: 'loaded@test.com' })
+    await nextTick()
+
+    expect(form.val.name).toBe('Loaded')
+    expect(form.isDirty.value).toBe(true)
+  })
+
+  it('reset после редактирования возвращает к загруженным данным', async () => {
+    const form = setup(() => {
+      const f = createUserForm(vi.fn())
+      applyUserRules(f)
+      return f
+    })
+
+    form.reset({ name: 'Иван', email: 'ivan@test.com' })
+    form.val.name = 'Изменено'
+    form.val.email = 'changed@test.com'
+
+    form.reset()
+    expect(form.val.name).toBe('Иван')
+    expect(form.val.email).toBe('ivan@test.com')
+    expect(form.isDirty.value).toBe(false)
+  })
+})
+
 describe('мероприятие: nested + даты + динамические массивы', () => {
   it('полный цикл с участниками, датами и wildcard-правилами', async () => {
     const form = setup(() => {
@@ -291,12 +463,20 @@ describe('мероприятие: nested + даты + динамические �
         },
       })
       f.setRules({
-        title: [required('Название обязательно'), minLength(3, 'Минимум 3 символа')],
+        title: [
+          required('Название обязательно'),
+          minLength(3, 'Минимум 3 символа'),
+        ],
         startDate: [required('Укажите дату начала')],
-        endDate: [dateAfter('startDate', 'Дата окончания должна быть после начала')],
+        endDate: [
+          dateAfter('startDate', 'Дата окончания должна быть после начала'),
+        ],
         maxSeats: [between(1, 1000, 'От 1 до 1000')],
         'participants.*.name': [required('Имя участника обязательно')],
-        'participants.*.email': [required('Email обязателен'), email('Невалидный email')],
+        'participants.*.email': [
+          required('Email обязателен'),
+          email('Невалидный email'),
+        ],
         'participants.*.role': [required('Укажите роль')],
       } as any)
       return f
@@ -311,12 +491,22 @@ describe('мероприятие: nested + даты + динамические �
     form.addArrayItem('participants', { name: '', email: '', role: '' })
 
     expect(await form.validateForm()).toBe(false)
-    expect(form.error('participants.0.name' as any)).toBe('Имя участника обязательно')
+    expect(form.error('participants.0.name' as any)).toBe(
+      'Имя участника обязательно'
+    )
     expect(form.error('participants.0.email' as any)).toBe('Email обязателен')
 
     // заполняем: первый ок, второй с битым email
-    form.val.participants[0] = { name: 'Иван', email: 'ivan@test.com', role: 'speaker' }
-    form.val.participants[1] = { name: 'Мария', email: 'not-email', role: 'listener' }
+    form.val.participants[0] = {
+      name: 'Иван',
+      email: 'ivan@test.com',
+      role: 'speaker',
+    }
+    form.val.participants[1] = {
+      name: 'Мария',
+      email: 'not-email',
+      role: 'listener',
+    }
 
     await form.validateForm()
     expect(form.hasError('participants.0.email' as any)).toBe(false)
@@ -333,7 +523,9 @@ describe('мероприятие: nested + даты + динамические �
     form.val.maxSeats = 50
 
     await form.validateForm()
-    expect(form.error('endDate')).toBe('Дата окончания должна быть после начала')
+    expect(form.error('endDate')).toBe(
+      'Дата окончания должна быть после начала'
+    )
 
     form.val.endDate = '2025-06-02'
     await form.validateForm()
@@ -348,9 +540,15 @@ describe('мероприятие: nested + даты + динамические �
     expect(form.hasError('participants.1.name' as any)).toBe(false)
 
     // добавляем нового с пустым именем
-    form.addArrayItem('participants', { name: '', email: 'new@test.com', role: 'listener' })
+    form.addArrayItem('participants', {
+      name: '',
+      email: 'new@test.com',
+      role: 'listener',
+    })
     await form.validateForm()
-    expect(form.error('participants.1.name' as any)).toBe('Имя участника обязательно')
+    expect(form.error('participants.1.name' as any)).toBe(
+      'Имя участника обязательно'
+    )
 
     // clear
     form.clear()

@@ -46,9 +46,7 @@ export function fileSize(
 
     const filesToCheck = toFileArray(files)
 
-    const oversizedFile = filesToCheck.find(
-      file => file.size > maxSizeInBytes
-    )
+    const oversizedFile = filesToCheck.find(file => file.size > maxSizeInBytes)
 
     if (oversizedFile) {
       const maxSizeMB = (maxSizeInBytes / (1024 * 1024)).toFixed(1)

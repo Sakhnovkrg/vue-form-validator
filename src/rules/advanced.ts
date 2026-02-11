@@ -17,10 +17,17 @@ export function requiredIf(
   conditionValue: any,
   msg: MaybeRefOrGetter<string> = 'This field is required'
 ): Rule<any> {
-  const rule: Rule<any> = (v: any, formValues?: Record<string, any>, meta?: RuleMeta) => {
+  const rule: Rule<any> = (
+    v: any,
+    formValues?: Record<string, any>,
+    meta?: RuleMeta
+  ) => {
     if (!formValues) return null
-    const resolved = meta?.fieldPath ? resolveWildcard(conditionField, meta.fieldPath) : conditionField
-    const shouldBeRequired = getNestedValue(formValues, resolved) === conditionValue
+    const resolved = meta?.fieldPath
+      ? resolveWildcard(conditionField, meta.fieldPath)
+      : conditionField
+    const shouldBeRequired =
+      getNestedValue(formValues, resolved) === conditionValue
 
     if (!shouldBeRequired) return null
 
@@ -115,9 +122,12 @@ export function sameAs(
 ): CrossFieldRule<any> {
   const rule = (v: any, formValues?: Record<string, any>, meta?: RuleMeta) => {
     if (!formValues) return null
-    const resolved = meta?.fieldPath ? resolveWildcard(fieldName, meta.fieldPath) : fieldName
+    const resolved = meta?.fieldPath
+      ? resolveWildcard(fieldName, meta.fieldPath)
+      : fieldName
     const otherValue = getNestedValue(formValues, resolved)
-    const isEmpty = (val: any) => val === null || val === undefined || val === ''
+    const isEmpty = (val: any) =>
+      val === null || val === undefined || val === ''
     if (isEmpty(v) && isEmpty(otherValue)) return null
     const message = resolveMessage(msg) || `Must match ${fieldName} field`
     return v === otherValue ? null : message
@@ -142,9 +152,15 @@ export function dateAfter(
   startDateField: string,
   msg?: MaybeRefOrGetter<string>
 ): CrossFieldRule<string> {
-  const rule = (v: string, formValues?: Record<string, any>, meta?: RuleMeta) => {
+  const rule = (
+    v: string,
+    formValues?: Record<string, any>,
+    meta?: RuleMeta
+  ) => {
     if (!formValues) return null
-    const resolved = meta?.fieldPath ? resolveWildcard(startDateField, meta.fieldPath) : startDateField
+    const resolved = meta?.fieldPath
+      ? resolveWildcard(startDateField, meta.fieldPath)
+      : startDateField
     const startDateValue = getNestedValue(formValues, resolved)
     if (!v || !startDateValue) return null
 

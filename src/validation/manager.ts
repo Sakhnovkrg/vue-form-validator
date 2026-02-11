@@ -1,6 +1,10 @@
 import { nextTick } from 'vue'
 import type { Rule, ValidationCache, FieldDependency } from '../forms/types'
-import { expandWildcardPaths, getNestedValue, resolveWildcard } from '../utils/nested'
+import {
+  expandWildcardPaths,
+  getNestedValue,
+  resolveWildcard,
+} from '../utils/nested'
 import { deepEqual, deepClone } from '../utils/deep'
 
 /**
@@ -80,7 +84,12 @@ export class ValidationManager<T extends Record<string, any>> {
    */
   private matchesWildcard(pattern: string, concrete: string): boolean {
     const re = new RegExp(
-      '^' + pattern.split('.').map(p => p === '*' ? '\\d+' : p).join('\\.') + '$'
+      '^' +
+        pattern
+          .split('.')
+          .map(p => (p === '*' ? '\\d+' : p))
+          .join('\\.') +
+        '$'
     )
     return re.test(concrete)
   }
@@ -220,8 +229,8 @@ export class ValidationManager<T extends Record<string, any>> {
     // Ищем по точному совпадению, затем по wildcard-паттерну
     let dep = this.fieldDependencies.find(d => d.field === fieldKey)
     if (!dep && fieldKey.includes('.')) {
-      dep = this.fieldDependencies.find(d =>
-        d.field.includes('*') && this.matchesWildcard(d.field, fieldKey)
+      dep = this.fieldDependencies.find(
+        d => d.field.includes('*') && this.matchesWildcard(d.field, fieldKey)
       )
     }
     const depsValues: Record<string, any> = {}
@@ -259,7 +268,9 @@ export class ValidationManager<T extends Record<string, any>> {
       }
       for (const rule of fieldRules) {
         try {
-          const maybePromise = (rule as any)(currentValue, this.values, { fieldPath: fieldKey })
+          const maybePromise = (rule as any)(currentValue, this.values, {
+            fieldPath: fieldKey,
+          })
 
           if (maybePromise && typeof maybePromise.then === 'function') {
             if (!validatingAsync) {
@@ -295,7 +306,9 @@ export class ValidationManager<T extends Record<string, any>> {
       this.validationCache[fieldKey] = {
         value: deepClone(currentValue),
         errors: fieldErrors,
-        depsValues: dep ? deepClone(depsValues) as Record<string, any> : undefined,
+        depsValues: dep
+          ? (deepClone(depsValues) as Record<string, any>)
+          : undefined,
       }
       this.errors[fieldKey] = fieldErrors
       return fieldErrors
@@ -329,10 +342,7 @@ export class ValidationManager<T extends Record<string, any>> {
     await Promise.all(allFields.map(field => this.validateField(field as any)))
 
     // Очистить stale nested-ошибки, оставшиеся от удалённых элементов массива
-    const activeFields = new Set([
-      ...Object.keys(this.rules),
-      ...allFields,
-    ])
+    const activeFields = new Set([...Object.keys(this.rules), ...allFields])
     for (const key of Object.keys(this.errors)) {
       if (key.includes('.') && !activeFields.has(key)) {
         delete this.errors[key]

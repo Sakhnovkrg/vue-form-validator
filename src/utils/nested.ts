@@ -33,7 +33,10 @@ export function setNestedValue(obj: any, path: string, value: any): void {
  * Резолвит wildcard в пути, подставляя индекс из конкретного пути.
  * resolveWildcard('contacts.*.email', 'contacts.0.confirmEmail') → 'contacts.0.email'
  */
-export function resolveWildcard(wildcardPath: string, concretePath: string): string {
+export function resolveWildcard(
+  wildcardPath: string,
+  concretePath: string
+): string {
   if (!wildcardPath.includes('*')) return wildcardPath
   const concrete = concretePath.split('.')
   return wildcardPath

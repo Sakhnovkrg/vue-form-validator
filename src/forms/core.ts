@@ -1,10 +1,5 @@
 import { nextTick, effectScope, onScopeDispose, getCurrentScope } from 'vue'
-import type {
-  FormOptions,
-  NestedPaths,
-  FormInstance,
-  FormRules,
-} from './types'
+import type { FormOptions, NestedPaths, FormInstance, FormRules } from './types'
 import { FormStateManager } from '../validation/state'
 import { ValidationManager } from '../validation/manager'
 import { createFileHelpers } from '../utils/fileHelpers'
@@ -76,8 +71,16 @@ export function createForm<T extends Record<string, any>>(
 
     // --- Composables ---
 
-    const { stopAll } = useFieldWatchers(stateManager, validationManager, validateField)
-    const arrays = useArrayHelpers(stateManager, validationManager, validateField)
+    const { stopAll } = useFieldWatchers(
+      stateManager,
+      validationManager,
+      validateField
+    )
+    const arrays = useArrayHelpers(
+      stateManager,
+      validationManager,
+      validateField
+    )
     const stateRefs = stateManager.getStateRefs()
     const fileHelpers = createFileHelpers({
       values: stateRefs.values,

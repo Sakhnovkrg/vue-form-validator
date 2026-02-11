@@ -10,24 +10,9 @@ import {
   minValue,
   maxValue,
 } from './basic'
-import {
-  fileRequired,
-  fileSize,
-  fileType,
-  fileCount,
-} from './file'
-import {
-  arrayMinLength,
-  arrayRequired,
-  arrayMaxLength,
-} from './array'
-import {
-  remote,
-  custom,
-  sameAs,
-  dateAfter,
-  requiredIf,
-} from './advanced'
+import { fileRequired, fileSize, fileType, fileCount } from './file'
+import { arrayMinLength, arrayRequired, arrayMaxLength } from './array'
+import { remote, custom, sameAs, dateAfter, requiredIf } from './advanced'
 import type { Rule, RuleChain } from '../forms/types'
 
 /**

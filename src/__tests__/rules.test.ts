@@ -1,11 +1,25 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
-  required, minLength, maxLength, email, regex,
-  numeric, between, oneOf, minValue, maxValue,
+  required,
+  minLength,
+  maxLength,
+  email,
+  regex,
+  numeric,
+  between,
+  oneOf,
+  minValue,
+  maxValue,
 } from '../rules/basic'
 import { fileRequired, fileSize, fileType, fileCount } from '../rules/file'
 import { arrayMinLength, arrayRequired, arrayMaxLength } from '../rules/array'
-import { custom, sameAs, requiredIf, dateAfter, remote } from '../rules/advanced'
+import {
+  custom,
+  sameAs,
+  requiredIf,
+  dateAfter,
+  remote,
+} from '../rules/advanced'
 
 describe('required', () => {
   const rule = required()
@@ -182,20 +196,26 @@ describe('fileSize', () => {
 describe('fileType', () => {
   it('по расширению', () => {
     const rule = fileType(['.txt', '.md'])
-    expect(rule(new File([''], 'readme.txt', { type: 'text/plain' }))).toBeNull()
+    expect(
+      rule(new File([''], 'readme.txt', { type: 'text/plain' }))
+    ).toBeNull()
     expect(rule(new File([''], 'pic.png', { type: 'image/png' }))).toBeTruthy()
   })
 
   it('по MIME-типу', () => {
     const rule = fileType(['image/png'])
     expect(rule(new File([''], 'a.png', { type: 'image/png' }))).toBeNull()
-    expect(rule(new File([''], 'a.pdf', { type: 'application/pdf' }))).toBeTruthy()
+    expect(
+      rule(new File([''], 'a.pdf', { type: 'application/pdf' }))
+    ).toBeTruthy()
   })
 
   it('MIME wildcard (image/*)', () => {
     const rule = fileType(['image/*'])
     expect(rule(new File([''], 'a.jpg', { type: 'image/jpeg' }))).toBeNull()
-    expect(rule(new File([''], 'a.pdf', { type: 'application/pdf' }))).toBeTruthy()
+    expect(
+      rule(new File([''], 'a.pdf', { type: 'application/pdf' }))
+    ).toBeTruthy()
   })
 })
 
@@ -289,7 +309,7 @@ describe('custom', () => {
   })
 
   it('синхронный — может вернуть свою строку ошибки', () => {
-    const rule = custom(v => v === 'ok' ? true : 'Wrong!')
+    const rule = custom(v => (v === 'ok' ? true : 'Wrong!'))
     expect(rule('ok', {})).toBeNull()
     expect(rule('bad', {})).toBe('Wrong!')
   })
