@@ -1,7 +1,7 @@
 import { describe, it, expectTypeOf } from 'vitest'
 import { effectScope, computed } from 'vue'
 import { createForm } from '../forms/core'
-import { createForm as createFormPublic } from '../forms/index'
+import { createForm as createFormPublic, createRules } from '../forms/index'
 import { required, between } from '../rules/basic'
 import { arrayMinLength } from '../rules/array'
 
@@ -186,21 +186,69 @@ describe('getValues возвращает T', () => {
 })
 
 describe('createForm с computed правилами для подмножества полей', () => {
-  it('принимает computed с неполным набором правил', () => {
+  it('принимает computed с массивом правил для подмножества полей', () => {
     scope.run(() => {
       const rules = computed(() => ({
         email: [required('Required')],
       }))
-      // Не должно быть TS ошибки: правила только для email, хотя форма имеет name, age, email
       const form = createFormPublic({ name: '', age: 0, email: '' }, rules)
       expectTypeOf(form.val.name).toBeString()
       expectTypeOf(form.val.email).toBeString()
     })
   })
 
+  it('принимает computed с RuleChain для подмножества полей', () => {
+    scope.run(() => {
+      const r = createRules()
+      const rules = computed(() => ({
+        email: r.required().email(),
+      }))
+      const form = createFormPublic(
+        { name: '', age: 0, email: '', city_id: null as number | null },
+        rules
+      )
+      expectTypeOf(form.val.name).toBeString()
+    })
+  })
+
+  it('воспроизводит кейс со скрина: много полей, nullable, RuleChain в computed', () => {
+    scope.run(() => {
+      const r = createRules()
+      // Реальный кейс: форма регистрации с nullable полями и правилами только для 2 из 8
+      type RegisterRequest = {
+        name: string
+        surname: string
+        patronymic: string
+        email: string
+        iin: string
+        birthdate: string
+        city_id: number | null
+        gender: string | null
+      }
+      const rules = computed(() => ({
+        iin: r.required().minLength(12),
+        email: r.required().email(),
+      }))
+      const form = createFormPublic(
+        {
+          name: '',
+          surname: '',
+          patronymic: '',
+          email: '',
+          iin: '',
+          birthdate: '',
+          city_id: null,
+          gender: null,
+        } as RegisterRequest,
+        rules
+      )
+      expectTypeOf(form.val.name).toBeString()
+      expectTypeOf(form.val.iin).toBeString()
+    })
+  })
+
   it('принимает callback с неполным набором правил', () => {
     scope.run(() => {
-      // Callback тоже должен позволять вернуть подмножество
       const form = createFormPublic({ name: '', age: 0, email: '' }, r => ({
         email: r.required().email(),
       }))
