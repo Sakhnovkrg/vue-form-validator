@@ -282,9 +282,9 @@ export type NestedPaths<T> = keyof T | ObjectPaths<T> | ArrayPaths<T>
  */
 export type FormRules<T extends Record<string, any>> = Partial<{
   [K in keyof T]:
-    | Rule<T[K]>
-    | RuleChain<T[K]>
-    | Array<Rule<T[K]> | RuleChain<T[K]>>
+    | Rule<NonNullable<T[K]>>
+    | RuleChain<NonNullable<T[K]>>
+    | Array<Rule<NonNullable<T[K]>> | RuleChain<NonNullable<T[K]>>>
 }>
 
 /**

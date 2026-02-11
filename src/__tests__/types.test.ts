@@ -1,7 +1,11 @@
 import { describe, it, expectTypeOf } from 'vitest'
 import { effectScope, computed } from 'vue'
 import { createForm } from '../forms/core'
-import { createForm as createFormPublic, createRules } from '../forms/index'
+import {
+  createForm as createFormPublic,
+  createRules,
+  type Rule,
+} from '../forms/index'
 import { required, between } from '../rules/basic'
 import { arrayMinLength } from '../rules/array'
 
@@ -253,6 +257,78 @@ describe('createForm с computed правилами для подмножест�
         email: r.required().email(),
       }))
       expectTypeOf(form.val.name).toBeString()
+    })
+  })
+
+  it('RuleChain<string> совместим с nullable полями (string | null) в computed', () => {
+    scope.run(() => {
+      const r = createRules()
+      // Кейс: поле email имеет тип string | null, а правило .email() возвращает RuleChain<string>
+      // До фикса FormRules требовал Rule<string | null>, а RuleChain<string> не совместим
+      // из-за контравариантности параметров функций
+      type NullableForm = {
+        email: string | null
+        phone: string | null
+        city_id: number | null
+        name: string
+      }
+      const rules = computed(() => ({
+        email: r.required().email(),
+        phone: r.required().minLength(10),
+      }))
+      const form = createFormPublic(
+        {
+          email: null,
+          phone: null,
+          city_id: null,
+          name: '',
+        } as NullableForm,
+        rules
+      )
+      expectTypeOf(form.val.email).toEqualTypeOf<string | null>()
+      expectTypeOf(form.val.name).toBeString()
+    })
+  })
+
+  it('RuleChain совместим с nullable полями в callback-стиле', () => {
+    scope.run(() => {
+      type NullableForm = {
+        email: string | null
+        age: number | null
+      }
+      const form = createFormPublic(
+        { email: null, age: null } as NullableForm,
+        r => ({
+          email: r.required().email(),
+          age: r.required().numeric(),
+        })
+      )
+      expectTypeOf(form.val.email).toEqualTypeOf<string | null>()
+      expectTypeOf(form.val.age).toEqualTypeOf<number | null>()
+    })
+  })
+
+  it('Rule<T> и Rule<NonNullable<T>> оба принимаются для nullable полей', () => {
+    scope.run(() => {
+      type FormWithNullable = {
+        status: string | null
+      }
+      // Rule<string> — правило для строго string
+      const strictRule: Rule<string> = v => (!v ? 'required' : null)
+      // Rule<string | null> — правило, явно принимающее null
+      const nullableRule: Rule<string | null> = v =>
+        v === null ? 'cannot be null' : null
+
+      const form1 = createFormPublic(
+        { status: null } as FormWithNullable,
+        () => ({ status: [strictRule] })
+      )
+      const form2 = createFormPublic(
+        { status: null } as FormWithNullable,
+        () => ({ status: [nullableRule] })
+      )
+      expectTypeOf(form1.val.status).toEqualTypeOf<string | null>()
+      expectTypeOf(form2.val.status).toEqualTypeOf<string | null>()
     })
   })
 })
