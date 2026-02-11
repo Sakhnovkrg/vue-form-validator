@@ -118,7 +118,7 @@ const {
         .remote(checkEmailUnique, t('stress.v.emailTaken')),
       phone: r
         .required(t('stress.v.required'))
-        .regex(/^\+7\d{9}$/, t('stress.v.phone')),
+        .regex(/^\+7\d{10}$/, t('stress.v.phone')),
       password: r
         .required(t('stress.v.required'))
         .minLength(8, t('stress.v.min8'))
@@ -129,7 +129,15 @@ const {
       confirmPassword: r
         .required(t('stress.v.required'))
         .sameAs('password', t('stress.v.sameAs')),
-      birthDate: r.required(t('stress.v.required')),
+      birthDate: r.required(t('stress.v.required')).custom((v: string) => {
+        if (!v) return true
+        const birth = new Date(v)
+        const today = new Date()
+        let age = today.getFullYear() - birth.getFullYear()
+        const m = today.getMonth() - birth.getMonth()
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+        return age >= 18 || t('stress.v.minAge')
+      }),
 
       // Account
       accountType: r.required(t('stress.v.required')),
@@ -170,7 +178,7 @@ const {
         .required(t('stress.v.required'))
         .email(t('stress.v.email')),
       'participants.*.role': r.required(t('stress.v.required')),
-      'participants.*.phone': r.regex(/^\+7\d{9}$/, t('stress.v.phone')),
+      'participants.*.phone': r.regex(/^\+7\d{10}$/, t('stress.v.phone')),
 
       // Addresses wildcard
       'addresses.*.street': r
@@ -184,14 +192,14 @@ const {
 
       // Files
       avatar: r
-        .fileSize(2, t('stress.v.fileSize2'))
+        .fileSize(2 * 1024 * 1024, t('stress.v.fileSize2'))
         .fileType(
           ['image/jpeg', 'image/png', 'image/webp'],
           t('stress.v.imageOnly')
         ),
       documents: r
         .fileCount(1, 5, t('stress.v.fileCount'))
-        .fileSize(10, t('stress.v.fileSize10')),
+        .fileSize(10 * 1024 * 1024, t('stress.v.fileSize10')),
 
       // Profile
       bio: r.maxLength(1000, t('stress.v.max1000')),
@@ -535,9 +543,10 @@ function addAddress() {
           class="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">{{
-              t('stress.f.companyName')
-            }}</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >{{ t('stress.f.companyName') }}
+              <span class="text-red-500">*</span></label
+            >
             <input
               v-model="values.companyName"
               class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
@@ -549,9 +558,10 @@ function addAddress() {
             }}</span>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">{{
-              t('stress.f.companySize')
-            }}</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >{{ t('stress.f.companySize') }}
+              <span class="text-red-500">*</span></label
+            >
             <select
               v-model="values.companySize"
               class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
@@ -570,9 +580,10 @@ function addAddress() {
         </div>
 
         <div v-if="values.accountType === 'enterprise'">
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{
-            t('stress.f.bin')
-          }}</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >{{ t('stress.f.bin') }}
+            <span class="text-red-500">*</span></label
+          >
           <input
             v-model="values.bin"
             class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"

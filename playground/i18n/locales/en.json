@@ -227,7 +227,7 @@
       "max500": "Max 500 characters",
       "max1000": "Max 1000 characters",
       "email": "Invalid email",
-      "phone": "Format: +7 and 9 digits",
+      "phone": "Format: +7 and 10 digits",
       "usernameFormat": "Letters, numbers and _ only",
       "usernameTaken": "Username is taken (try not 'admin')",
       "emailTaken": "Email is taken (try not 'taken@example.com')",
@@ -249,7 +249,8 @@
       "notInPast": "Date cannot be in the past",
       "deadLink": "Domain not found (try not 'deadlink')",
       "pickNotification": "Pick at least one channel",
-      "mustAgree": "You must agree"
+      "mustAgree": "You must agree",
+      "minAge": "You must be at least 18 years old"
     }
   }
 }
