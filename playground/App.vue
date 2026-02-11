@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { availableLocales } from './i18n'
 
@@ -70,8 +70,25 @@ const demos: Record<
   },
 }
 
-const current = ref<DemoKey>('original')
+const demoKeys = Object.keys(demos) as DemoKey[]
+
+function getDemoFromHash(): DemoKey {
+  const hash = window.location.hash.replace('#', '')
+  return demoKeys.includes(hash as DemoKey) ? (hash as DemoKey) : 'original'
+}
+
+const current = ref<DemoKey>(getDemoFromHash())
 const CurrentComp = computed(() => demos[current.value].component)
+
+watch(current, key => {
+  window.location.hash = key
+})
+
+onMounted(() => {
+  window.addEventListener('hashchange', () => {
+    current.value = getDemoFromHash()
+  })
+})
 
 function setLocale(newLocale: string) {
   locale.value = newLocale
