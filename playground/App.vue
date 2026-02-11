@@ -9,6 +9,7 @@ import DateExamplesForm from './forms/DateExamplesForm.vue'
 import ArrayExamplesForm from './forms/ArrayExamplesForm.vue'
 import ObjectExampleForm from './forms/ObjectExampleForm.vue'
 import PresetShareForm from './forms/PresetShareForm.vue'
+import StressTestForm from './forms/StressTestForm.vue'
 
 type DemoKey =
   | 'original'
@@ -17,6 +18,7 @@ type DemoKey =
   | 'arrays'
   | 'nested'
   | 'presetshare'
+  | 'stress'
 
 const { t, locale } = useI18n()
 
@@ -59,6 +61,12 @@ const demos: Record<
     descKey: 'forms.presetshareDesc',
     icon: '🎵',
     component: PresetShareForm,
+  },
+  stress: {
+    labelKey: 'forms.stress',
+    descKey: 'forms.stressDesc',
+    icon: '🔥',
+    component: StressTestForm,
   },
 }
 

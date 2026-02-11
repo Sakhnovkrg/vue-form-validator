@@ -18,7 +18,12 @@ export function useFieldWatchers<T extends Record<string, any>>(
         if (typeof newValue !== 'object' && newValue === oldValue) return
 
         stateManager.markDirty(key, newValue)
-        validationManager.clearCache(key)
+
+        // Очищаем кеш только для самого поля, НЕ для вложенных (participants.*)
+        // Вложенные поля проверяются по deepEqual в validateField — если значение не менялось,
+        // валидация вернёт кешированный результат. Это ключевая оптимизация для массивов:
+        // без неё каждый keystroke в participants[0].name ревалидирует ВСЕ touched nested поля.
+        validationManager.clearCacheExact(key)
 
         if (stateManager.touched[key]) {
           await nextTick()

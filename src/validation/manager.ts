@@ -378,6 +378,15 @@ export class ValidationManager<T extends Record<string, any>> {
   }
 
   /**
+   * Очищает кэш валидации только для конкретного поля (без вложенных)
+   * Используется в watcher-е: вложенные поля проверяются по deepEqual в validateField
+   * @param fieldKey - Ключ поля
+   */
+  clearCacheExact(fieldKey: string) {
+    delete this.validationCache[fieldKey]
+  }
+
+  /**
    * Очищает кэш валидации для поля или всех полей
    * @param fieldKey - Опциональный ключ поля, очищает все, если не указан
    */
