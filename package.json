@@ -46,7 +46,10 @@
     "lint:check": "eslint . --ext .vue,.js,.ts,.jsx,.tsx",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "docs:dev": "npm --prefix docs run dev",
+    "docs:build": "npm --prefix docs run build",
+    "docs:preview": "npm --prefix docs run preview"
   },
   "peerDependencies": {
     "vue": "^3.0.0"
