@@ -16,7 +16,10 @@
     #42b883 50%,
     #2f3e63 50%
   );
-  --vp-c-brand-1: #42b883;
+  --vp-c-gutter: #161618;
+  --vp-c-brand-1: #41B883;
+  --vp-button-brand-bg: #41B883;
+  --vp-button-brand-hover-bg: #35a06f;
   --vp-home-hero-image-filter: blur(44px);
 }
 
@@ -46,6 +49,11 @@
 
   backdrop-filter: blur(8px);
 }
+
+.VPNavBarTitle .logo {
+  margin-right: 6px;
+}
+
 
 /* used in reference/default-theme-search */
 img[src='/search.png'] {

@@ -10,27 +10,27 @@ export default defineAdditionalConfig({
   themeConfig: {
     nav: [
       {
-        text: 'Reference',
-        link: '/reference/api',
-        activeMatch: '/reference/'
+        text: 'Docs',
+        link: '/key-features',
+        activeMatch: '/(key-features|getting-started|develop|reference|advanced-usage)'
       },
       {
         text: 'Playground',
-        link: '/playground'
+        link: '/playground/'
       },
-      {
-        text: pkg.version,
-        items: [
-          {
-            text: 'Changelog',
-            link: 'https://github.com/vuejs/vitepress/blob/main/CHANGELOG.md'
-          },
-          {
-            text: 'Contributing',
-            link: 'https://github.com/vuejs/vitepress/blob/main/.github/contributing.md'
-          }
-        ]
-      }
+      // {
+      //   text: pkg.version,
+      //   items: [
+      //     {
+      //       text: 'Changelog',
+      //       link: 'https://github.com/vuejs/vitepress/blob/main/CHANGELOG.md'
+      //     },
+      //     {
+      //       text: 'Contributing',
+      //       link: 'https://github.com/vuejs/vitepress/blob/main/.github/contributing.md'
+      //     }
+      //   ]
+      // }
     ],
 
     sidebar: [
@@ -38,9 +38,9 @@ export default defineAdditionalConfig({
         text: 'Introduction',
         collapsed: false,
         items: [
-          { text: 'Getting Started', link: 'getting-started' },
-          { text: 'Key Features', link: 'key-features' },
-          { text: 'Develop', link: 'develop' }
+          { text: 'Key Features', link: '/key-features' },
+          { text: 'Getting Started', link: '/getting-started' },
+          { text: 'Develop', link: '/develop' }
         ]
       },
       {

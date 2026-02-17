@@ -6,11 +6,11 @@ hero:
   tagline: Валидируй умнее. Создавай быстрее.
   actions:
     - theme: brand
-      text: Начало работы
-      link: ./getting-started
+      text: Документация
+      link: /ru/key-features/
     - theme: alt
       text: Playground
-      link: ./playground
+      link: /playground/
   image:
     src: /logo-large.svg
     alt: VitePress

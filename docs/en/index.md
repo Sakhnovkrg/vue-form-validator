@@ -6,11 +6,11 @@ hero:
   tagline: Validate smarter. Build faster.
   actions:
     - theme: brand
-      text: Getting Started
-      link: ./getting-started
+      text: View Docs
+      link: /key-features/
     - theme: alt
       text: Playground
-      link: ./playground
+      link: /playground/
   image:
     src: /logo-large.svg
     alt: VitePress

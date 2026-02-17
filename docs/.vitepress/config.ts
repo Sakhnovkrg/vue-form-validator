@@ -15,6 +15,7 @@ const prod = !!process.env.NETLIFY
 export default defineConfig({
   title: 'Vue Form Validator',
   base: '/vue-form-validator/',
+  appearance: 'force-dark',
 
   rewrites: {
     'en/:rest*': ':rest*'

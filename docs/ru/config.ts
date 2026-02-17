@@ -10,27 +10,27 @@ export default defineAdditionalConfig({
   themeConfig: {
     nav: [
       {
-        text: 'Справочник',
-        link: '/ru/reference/api',
-        activeMatch: '/reference/'
+        text: 'Документация',
+        link: '/ru/key-features',
+        activeMatch: '/ru/(key-features|getting-started|develop|reference|advanced-usage)'
       },
       {
         text: 'Playground',
-        link: '/playground'
+        link: '/playground/'
       },
-      {
-        text: pkg.version,
-        items: [
-          {
-            text: 'Изменения',
-            link: 'https://github.com/sakhnovkrg/vue-form-validator/blob/main/CHANGELOG.md'
-          },
-          {
-            text: 'Вклад',
-            link: 'https://github.com/sakhnovkrg/vue-form-validator/blob/main/.github/contributing.md'
-          }
-        ]
-      }
+      // {
+      //   text: pkg.version,
+      //   items: [
+      //     {
+      //       text: 'Изменения',
+      //       link: 'https://github.com/sakhnovkrg/vue-form-validator/blob/main/CHANGELOG.md'
+      //     },
+      //     {
+      //       text: 'Вклад',
+      //       link: 'https://github.com/sakhnovkrg/vue-form-validator/blob/main/.github/contributing.md'
+      //     }
+      //   ]
+      // }
     ],
 
     sidebar: [
@@ -38,8 +38,8 @@ export default defineAdditionalConfig({
         text: 'Введение',
         collapsed: false,
         items: [
-          { text: 'Начало работы', link: '/ru/getting-started' },
           { text: 'Основные преимущества', link: '/ru/key-features' },
+          { text: 'Начало работы', link: '/ru/getting-started' },
           { text: 'Разработка', link: '/ru/develop' }
         ]
       },
