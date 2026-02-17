@@ -11,6 +11,7 @@ hero:
     - theme: alt
       text: Playground
       link: /playground/
+      target: _self
   image:
     src: /logo-large.svg
     alt: VitePress

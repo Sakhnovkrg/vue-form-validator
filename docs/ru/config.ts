@@ -16,7 +16,8 @@ export default defineAdditionalConfig({
       },
       {
         text: 'Playground',
-        link: '/playground/'
+        link: '/playground/',
+        target: '_self'
       },
       // {
       //   text: pkg.version,
