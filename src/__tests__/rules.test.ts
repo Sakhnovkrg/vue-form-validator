@@ -72,12 +72,13 @@ describe('email', () => {
 
   it('валидные адреса', () => {
     expect(rule('test@example.com')).toBeNull()
-    expect(rule('a@b.c')).toBeNull()
+    expect(rule('a@b.co')).toBeNull()
   })
 
   it('невалидные адреса', () => {
     expect(rule('not-email')).toBeTruthy()
     expect(rule('@b.com')).toBeTruthy()
+    expect(rule('test@example.c')).toBeTruthy()
   })
 
   it('пустая строка пропускается', () => {

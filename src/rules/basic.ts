@@ -70,7 +70,7 @@ export function maxLength(
 export function email(
   msg: MaybeRefOrGetter<string> = 'Invalid email address'
 ): Rule<string> {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
   return v => {
     const message = resolveMessage(msg)
     return !v || emailRegex.test(v) ? null : message

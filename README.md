@@ -1,32 +1,34 @@
 # Vue Form Validator
 
-Современная, типобезопасная библиотека валидации форм для Vue 3 с интуитивным API и мощными возможностями.
+**English** | [Русский](README_RU.md)
 
-⚠️ **Библиотека находится в разработке**
+A modern, type-safe form validation library for Vue 3 with an intuitive API and powerful features.
 
-## [Демо](https://sakhnovkrg.github.io/vue-form-validator/)
+⚠️ **The library is under active development**
 
-## ✨ Основные возможности
+## [Demo](https://sakhnovkrg.github.io/vue-form-validator/)
 
-- 🚀 **Без зависимостей** - Легкая и быстрая (~6kB gzipped)
-- 🦄 **Типобезопасность** - Полная поддержка TypeScript с автодополнением
-- 📋 **Декларативность** - Вся форма определяется в одном месте: структура, валидация и обработка
-- 🎯 **Интуитивный API** - Простые и понятные методы для работы с формами
-- 🔄 **Реактивность** - Валидация в реальном времени с реактивностью Vue
-- 🌍 **Интернационализация** - Поддержка реактивных сообщений об ошибках
-- 📂 **Загрузка файлов** - Встроенная валидация файлов с хелперами
-- 📝 **Динамические массивы** - Поддержка валидации массивов объектов
-- ⚡ **Асинхронная валидация** - Удаленная валидация с debouncing
-- 🔗 **Кросс-полевая валидация** - Зависимости полей и сравнения
-- 🎨 **Гибкость** - Кастомные правила и условная валидация
+## ✨ Key Features
 
-## 🧬 Умная типизация
+- 🚀 **Zero dependencies** - Lightweight and fast (~6kB gzipped)
+- 🦄 **Type safety** - Full TypeScript support with autocompletion
+- 📋 **Declarative** - The whole form is defined in one place: structure, validation, and handling
+- 🎯 **Intuitive API** - Simple and clear methods for working with forms
+- 🔄 **Reactivity** - Real-time validation powered by Vue reactivity
+- 🌍 **Internationalization** - Support for reactive error messages
+- 📂 **File uploads** - Built-in file validation with helpers
+- 📝 **Dynamic arrays** - Validation support for arrays of objects
+- ⚡ **Async validation** - Remote validation with debouncing
+- 🔗 **Cross-field validation** - Field dependencies and comparisons
+- 🎨 **Flexibility** - Custom rules and conditional validation
 
-Библиотека спроектирована с особым вниманием к типобезопасности. `createForm` поддерживает как простые, так и вложенные структуры данных.
+## 🧬 Smart typing
 
-TypeScript контролирует корректность имен полей на всех уровнях:
+The library is designed with a strong focus on type safety. `createForm` supports both simple and nested data structures.
 
-**Для основных полей формы (строгая типизация):**
+TypeScript enforces correct field names at every level:
+
+**For top-level form fields (strict typing):**
 
 ```typescript
 const form = createForm({
@@ -34,12 +36,12 @@ const form = createForm({
   password: ''
 }, ...)
 
-form.error('email')    // ✅ Корректно - поле существует
-form.error('invalid')  // ❌ Ошибка TypeScript - поле не существует
-form.hasError('password') // ✅ Корректно с автодополнением
+form.error('email')    // ✅ Correct - the field exists
+form.error('invalid')  // ❌ TypeScript error - the field does not exist
+form.hasError('password') // ✅ Correct with autocompletion
 ```
 
-**Для вложенных полей массивов и объектов (продвинутая типизация):**
+**For nested array and object fields (advanced typing):**
 
 ```typescript
 const form = createForm({
@@ -47,39 +49,39 @@ const form = createForm({
   address: { street: '', city: '' }
 }, ...)
 
-// ✅ TypeScript автоматически выводит допустимые пути:
+// ✅ TypeScript automatically infers valid paths:
 form.hasError('contacts.0.name')    // contacts.${number}.name
 form.hasError('contacts.0.email')   // contacts.${number}.email
 form.hasError('address.street')     // address.street
 form.hasError('address.city')       // address.city
 
-// ❌ TypeScript не позволит указать несуществующие пути:
-form.hasError('contacts.0.invalid') // Ошибка компиляции!
-form.hasError('address.invalid')    // Ошибка компиляции!
+// ❌ TypeScript won't allow non-existent paths:
+form.hasError('contacts.0.invalid') // Compilation error!
+form.hasError('address.invalid')    // Compilation error!
 
-// ✅ Для автодополнения используйте helper'ы:
-form.hasError(form.arrayPath('contacts', 0, 'name'))   // автодополнение
-form.hasError(form.objectPath('address', 'street'))    // автодополнение
+// ✅ Use helpers for autocompletion:
+form.hasError(form.arrayPath('contacts', 0, 'name'))   // autocompletion
+form.hasError(form.objectPath('address', 'street'))    // autocompletion
 ```
 
-Типы автоматически выводятся из начальных значений, обеспечивая полную типобезопасность на всех уровнях API.
+Types are automatically inferred from the initial values, providing full type safety across all API levels.
 
-## ⚡ Поддерживаемые структуры данных
+## ⚡ Supported data structures
 
-`createForm` поддерживает все типы структур данных:
+`createForm` supports all types of data structures:
 
-- ✅ **Простые поля** - `string`, `number`, `boolean`, `File`, `File[]`
-- ✅ **Массивы объектов** - динамические списки с валидацией элементов
-- ✅ **Вложенные объекты** - многоуровневые структуры данных
-- ✅ **Смешанные структуры** - комбинации простых полей, массивов и объектов
+- ✅ **Simple fields** - `string`, `number`, `boolean`, `File`, `File[]`
+- ✅ **Arrays of objects** - dynamic lists with per-item validation
+- ✅ **Nested objects** - multi-level data structures
+- ✅ **Mixed structures** - combinations of simple fields, arrays, and objects
 
-## 📦 Установка
+## 📦 Installation
 
 ```bash
 npm install @sakhnovkrg/vue-form-validator
 ```
 
-## 🚀 Быстрый старт
+## 🚀 Quick start
 
 ```vue
 <script setup lang="ts">
@@ -106,7 +108,7 @@ const {
     }),
   {
     async onSubmit(values) {
-      console.log('Форма отправлена:', values)
+      console.log('Form submitted:', values)
     },
   }
 )
@@ -130,7 +132,7 @@ const {
         v-model="values.password"
         @blur="touch('password')"
         type="password"
-        placeholder="Пароль"
+        placeholder="Password"
       />
       <span v-if="hasError('password')" class="error">
         {{ error('password') }}
@@ -138,63 +140,63 @@ const {
     </div>
 
     <button type="submit" :disabled="!isDirty || !isValid || isSubmitting">
-      {{ isSubmitting ? 'Отправка...' : 'Отправить' }}
+      {{ isSubmitting ? 'Submitting...' : 'Submit' }}
     </button>
   </form>
 </template>
 ```
 
-## 🎯 Декларативный подход
+## 🎯 Declarative approach
 
-Вся логика формы определяется в одном вызове `createForm()`:
+All form logic is defined in a single `createForm()` call:
 
 ```typescript
 import { createForm } from '@sakhnovkrg/vue-form-validator'
 
 const form = createForm(
-  // 1. Структура данных
+  // 1. Data structure
   { email: '', password: '' },
-  // 2. Правила валидации
+  // 2. Validation rules
   (r, define) =>
     define({
       email: r.required().email(),
       password: r.required().minLength(8),
     }),
-  // 3. Обработчики событий
+  // 3. Event handlers
   {
     onSubmit: values => {
-      /* отправка формы */
+      /* submit the form */
     },
   }
 )
 ```
 
-**Преимущества:**
+**Benefits:**
 
-- ✅ Никаких отдельных схем или разбросанной логики
-- ✅ TypeScript автоматически выводит типы из определения
-- ✅ Вся форма видна в одном месте - легко понимать и поддерживать
-- ✅ Меньше boilerplate кода
+- ✅ No separate schemas or scattered logic
+- ✅ TypeScript automatically infers types from the definition
+- ✅ The whole form is visible in one place - easy to understand and maintain
+- ✅ Less boilerplate code
 
-## 🌍 Интернационализация (i18n)
+## 🌍 Internationalization (i18n)
 
-Для интернационализации вам понадобится **реактивный подход** с [computed()](https://vuejs.org/guide/essentials/computed.html), который автоматически обновляет сообщения об ошибках при смене языка.
+For internationalization you'll need a **reactive approach** with [computed()](https://vuejs.org/guide/essentials/computed.html), which automatically updates error messages when the language changes.
 
-### Обычный подход (без i18n)
+### Plain approach (without i18n)
 
 ```typescript
-// Простой и быстрый - для форм с фиксированными сообщениями
+// Simple and fast - for forms with fixed messages
 const form = createForm(initialValues, (r, define) =>
   define({
-    email: r.required('Email обязателен').email('Неверный формат'),
+    email: r.required('Email is required').email('Invalid format'),
   })
 )
 ```
 
-### Реактивный подход (с i18n)
+### Reactive approach (with i18n)
 
 ```typescript
-// Реактивные сообщения - обновляются при смене языка
+// Reactive messages - updated when the language changes
 const form = createForm(
   initialValues,
   computed(() => {
@@ -206,7 +208,7 @@ const form = createForm(
 )
 ```
 
-**Полный пример с vue-i18n:**
+**Full example with vue-i18n:**
 
 ```vue
 <script setup lang="ts">
@@ -218,7 +220,7 @@ const { t } = useI18n()
 
 const form = createForm(
   { username: '', email: '', password: '' },
-  // вместо (r, define) => ...
+  // instead of (r, define) => ...
   computed(() => {
     const r = createRules()
 
@@ -240,217 +242,217 @@ const form = createForm(
 
 <template>
   <form @submit.prevent="form.submit">
-    <!-- .values и .val — взаимозаменяемы, .val удобнее в script -->
+    <!-- .values and .val are interchangeable, .val is handier in script -->
     <input v-model="form.values.username" @blur="form.touch('username')" />
     <span v-if="form.hasError('username')">{{ form.error('username') }}</span>
 
     <input v-model="form.values.email" @blur="form.touch('email')" />
     <span v-if="form.hasError('email')">{{ form.error('email') }}</span>
 
-    <!-- Остальные поля... -->
+    <!-- Other fields... -->
   </form>
 </template>
 ```
 
-## 📖 Справочник API
+## 📖 API Reference
 
 ### `createForm(initialValues, rulesBuilder, options?)`
 
-Создает реактивную форму с валидацией.
+Creates a reactive form with validation.
 
-**Параметры:**
+**Parameters:**
 
-- `initialValues` - Начальные значения формы (поддерживает вывод типов)
-- `rulesBuilder` - Функция-строитель правил `(r, define) => define({...})` или реактивный computed `computed(() => { const r = createRules(); return {...} })` для i18n
-- `options` - Дополнительные настройки
+- `initialValues` - Initial form values (supports type inference)
+- `rulesBuilder` - A rules builder function `(r, define) => define({...})` or a reactive computed `computed(() => { const r = createRules(); return {...} })` for i18n
+- `options` - Additional settings
 
-**Настройки:**
+**Settings:**
 
-- `onSubmit?` - Обработчик отправки формы
-- `onClear?` - Обработчик очистки формы
+- `onSubmit?` - Form submit handler
+- `onClear?` - Form clear handler
 
-**Возвращает:** Экземпляр формы с реактивными свойствами и методами
+**Returns:** A form instance with reactive properties and methods
 
-**Поддерживаемые возможности:**
+**Supported capabilities:**
 
-- Поддержка вложенных путей типа `'contacts.0.email'`
-- Методы `arrayPath()` и `objectPath()` для типобезопасного построения путей
-- Управление массивами: `addArrayItem()`, `removeArrayItem()`, `toggleArrayItem()`
-- Автоматическая оптимизация в зависимости от структуры данных
+- Support for nested paths like `'contacts.0.email'`
+- `arrayPath()` and `objectPath()` methods for type-safe path building
+- Array management: `addArrayItem()`, `removeArrayItem()`, `toggleArrayItem()`
+- Automatic optimization depending on the data structure
 
-### Свойства и методы формы
+### Form properties and methods
 
-#### Реактивное состояние
+#### Reactive state
 
-| Свойство        | Тип                             | Описание                                           |
-| --------------- | ------------------------------- | -------------------------------------------------- |
-| `values`        | `Ref<T>`                        | Текущие значения формы (реактивный ref)            |
-| `val`           | `T`                             | Геттер для удобного доступа к значениям (в script) |
-| `errors`        | `Ref<Record<string, string[]>>` | Ошибки валидации по полям                          |
-| `touched`       | `Ref<Record<string, boolean>>`  | Состояние "тронутости" полей                       |
-| `dirty`         | `Ref<Record<string, boolean>>`  | Измененные поля                                    |
-| `isValidating`  | `Ref<Record<string, boolean>>`  | Поля в процессе валидации                          |
-| `isSubmitting`  | `Ref<boolean>`                  | Статус отправки формы                              |
-| `isValid`       | `ComputedRef<boolean>`          | Валидность всей формы                              |
-| `isDirty`       | `ComputedRef<boolean>`          | Наличие несохраненных изменений                    |
-| `hasAnyErrors`  | `ComputedRef<boolean>`          | Наличие ошибок в форме                             |
-| `touchedFields` | `ComputedRef<string[]>`         | Список "тронутых" полей                            |
-| `dirtyFields`   | `ComputedRef<string[]>`         | Список измененных полей                            |
+| Property        | Type                            | Description                                          |
+| --------------- | ------------------------------- | --------------------------------------------------- |
+| `values`        | `Ref<T>`                        | Current form values (reactive ref)                  |
+| `val`           | `T`                             | Getter for convenient access to values (in script)  |
+| `errors`        | `Ref<Record<string, string[]>>` | Validation errors by field                          |
+| `touched`       | `Ref<Record<string, boolean>>`  | "Touched" state of fields                           |
+| `dirty`         | `Ref<Record<string, boolean>>`  | Changed fields                                      |
+| `isValidating`  | `Ref<Record<string, boolean>>`  | Fields currently being validated                    |
+| `isSubmitting`  | `Ref<boolean>`                  | Form submission status                              |
+| `isValid`       | `ComputedRef<boolean>`          | Validity of the whole form                          |
+| `isDirty`       | `ComputedRef<boolean>`          | Whether there are unsaved changes                   |
+| `hasAnyErrors`  | `ComputedRef<boolean>`          | Whether the form has any errors                     |
+| `touchedFields` | `ComputedRef<string[]>`         | List of "touched" fields                            |
+| `dirtyFields`   | `ComputedRef<string[]>`         | List of changed fields                              |
 
-#### Методы валидации
+#### Validation methods
 
-| Метод                 | Описание                                             |
-| --------------------- | ---------------------------------------------------- |
-| `setRules(rules)`     | Установить правила валидации                         |
-| `validateField(name)` | Валидировать поле (обычное или вложенное)            |
-| `validateForm()`      | Валидировать всю форму                               |
-| `submit()`            | Отправить форму после валидации                      |
-| `touch(field)`        | Отметить поле как "тронутое" (обычное или вложенное) |
+| Method                | Description                                       |
+| --------------------- | ------------------------------------------------- |
+| `setRules(rules)`     | Set validation rules                              |
+| `validateField(name)` | Validate a field (regular or nested)              |
+| `validateForm()`      | Validate the whole form                           |
+| `submit()`            | Submit the form after validation                  |
+| `touch(field)`        | Mark a field as "touched" (regular or nested)     |
 
-#### Управление состоянием
+#### State management
 
-| Метод                | Описание                             |
+| Method               | Description                          |
 | -------------------- | ------------------------------------ |
-| `setValues(values)`  | Обновить значения полей              |
-| `getValues()`        | Получить копию текущих значений      |
-| `clear(useInitial?)` | Очистить форму                       |
-| `reset(newValues?)`  | Сбросить форму к начальным значениям |
-| `resetState()`       | Сбросить состояние валидации         |
-| `setErrors(errors)`  | Установить ошибки для полей          |
-| `resetErrors()`      | Очистить все ошибки                  |
+| `setValues(values)`  | Update field values                  |
+| `getValues()`        | Get a copy of the current values     |
+| `clear(useInitial?)` | Clear the form                       |
+| `reset(newValues?)`  | Reset the form to its initial values |
+| `resetState()`       | Reset the validation state           |
+| `setErrors(errors)`  | Set errors for fields                |
+| `resetErrors()`      | Clear all errors                     |
 
-#### Проверка состояния полей
+#### Checking field state
 
-**Унифицированные методы (работают с обычными и вложенными полями):**
+**Unified methods (work with both regular and nested fields):**
 
-| Метод                   | Возврат          | Описание                           |
-| ----------------------- | ---------------- | ---------------------------------- |
-| `hasError(field)`       | `boolean`        | Есть ли ошибки в поле              |
-| `error(field)`          | `string \| null` | Первая ошибка поля                 |
-| `allErrors(field)`      | `string[]`       | Все ошибки поля                    |
-| `isTouched(field)`      | `boolean`        | Было ли поле "тронуто"             |
-| `validating(field)`     | `boolean`        | Валидируется ли поле               |
-| `isFieldDirty(field)`   | `boolean`        | Изменено ли поле                   |
-| `getFieldStatus(field)` | `FieldStatus`    | Полная информация о состоянии поля |
+| Method                  | Returns          | Description                       |
+| ----------------------- | ---------------- | --------------------------------- |
+| `hasError(field)`       | `boolean`        | Whether the field has errors      |
+| `error(field)`          | `string \| null` | The first error of the field      |
+| `allErrors(field)`      | `string[]`       | All errors of the field           |
+| `isTouched(field)`      | `boolean`        | Whether the field was "touched"   |
+| `validating(field)`     | `boolean`        | Whether the field is validating   |
+| `isFieldDirty(field)`   | `boolean`        | Whether the field has changed     |
+| `getFieldStatus(field)` | `FieldStatus`    | Full info about the field's state |
 
-**Примеры использования:**
+**Usage examples:**
 
 ```typescript
-// Обычные поля
+// Regular fields
 form.hasError('email')
 form.error('name')
 
-// Вложенные пути
+// Nested paths
 form.hasError('contacts.0.email')
 form.error('address.street')
 
-// С автодополнением через helper'ы
+// With autocompletion via helpers
 form.hasError(form.arrayPath('contacts', 0, 'email'))
 form.error(form.objectPath('address', 'street'))
 ```
 
-#### Работа с вложенными структурами
+#### Working with nested structures
 
-| Метод                                    | Описание                                         |
+| Method                                   | Description                                      |
 | ---------------------------------------- | ------------------------------------------------ |
-| `addArrayItem(arrayPath, item)`          | Добавить элемент в массив                        |
-| `removeArrayItem(arrayPath, index)`      | Удалить элемент из массива                       |
-| `toggleArrayItem(arrayPath, item)`       | Переключить элемент в массиве (добавить/удалить) |
-| `arrayIncludes(arrayPath, item)`         | Проверить содержится ли элемент в массиве        |
-| `arrayPath(arrayField, index, property)` | Построить типобезопасный путь к элементу массива |
-| `objectPath(objectField, property)`      | Построить типобезопасный путь к свойству объекта |
+| `addArrayItem(arrayPath, item)`          | Add an item to an array                          |
+| `removeArrayItem(arrayPath, index)`      | Remove an item from an array                     |
+| `toggleArrayItem(arrayPath, item)`       | Toggle an item in an array (add/remove)          |
+| `arrayIncludes(arrayPath, item)`         | Check whether an item is contained in an array   |
+| `arrayPath(arrayField, index, property)` | Build a type-safe path to an array element       |
+| `objectPath(objectField, property)`      | Build a type-safe path to an object property     |
 
-#### Файловые утилиты
+#### File utilities
 
-| Свойство                    | Описание                                            |
-| --------------------------- | --------------------------------------------------- |
-| `file.{fieldName}.files`    | `ComputedRef<File[]>` - Список файлов               |
-| `file.{fieldName}.fileInfo` | `ComputedRef<FileInfo[]>` - Информация о файлах     |
-| `file.{fieldName}.handler`  | `(event: Event) => void` - Обработчик выбора файлов |
-| `file.{fieldName}.clear`    | `() => void` - Очистить выбранные файлы и DOM input |
+| Property                    | Description                                          |
+| --------------------------- | ---------------------------------------------------- |
+| `file.{fieldName}.files`    | `ComputedRef<File[]>` - List of files                |
+| `file.{fieldName}.fileInfo` | `ComputedRef<FileInfo[]>` - Info about files         |
+| `file.{fieldName}.handler`  | `(event: Event) => void` - File selection handler    |
+| `file.{fieldName}.clear`    | `() => void` - Clear selected files and the DOM input |
 
-**Note:** Helpers создаются лениво при первом обращении. Для множественного выбора установите `multiple` на `<input type="file">` — библиотека определит это автоматически по событию ввода.
+**Note:** Helpers are created lazily on first access. For multiple selection, set `multiple` on the `<input type="file">` — the library detects it automatically from the input event.
 
-**Важно:** Метод `clear()` полностью очищает файловые поля - как значение в форме, так и визуальное отображение в DOM input элементе. Это предотвращает ситуацию, когда после `clear()` файл исчезает из формы, но остается отображаться в input.
+**Important:** The `clear()` method fully clears file fields - both the value in the form and the visual display in the DOM input element. This prevents the situation where, after `clear()`, the file disappears from the form but remains displayed in the input.
 
-#### Продвинутые методы
+#### Advanced methods
 
-| Метод                | Описание                                                  |
-| -------------------- | --------------------------------------------------------- |
-| `clearCache(field?)` | Очистить кэш валидации (поля или весь кэш)                |
-| `dispose()`          | Остановить watchers и очистить ресурсы (авто при unmount) |
+| Method               | Description                                                  |
+| -------------------- | ----------------------------------------------------------- |
+| `clearCache(field?)` | Clear the validation cache (per field or the whole cache)   |
+| `dispose()`          | Stop watchers and free resources (automatic on unmount)     |
 
-## 🛠️ Встроенные правила валидации
+## 🛠️ Built-in validation rules
 
-### Базовые правила
+### Basic rules
 
 ```typescript
-r.required('Кастомное сообщение') // Обязательное поле
-r.email() // Валидный email
-r.minLength(5) // Минимальная длина
-r.maxLength(100) // Максимальная длина
-r.numeric() // Только цифры
-r.regex(/pattern/, 'сообщение') // Кастомный regex
-r.oneOf(['a', 'b', 'c']) // Должно быть одним из значений
+r.required('Custom message') // Required field
+r.email() // Valid email
+r.minLength(5) // Minimum length
+r.maxLength(100) // Maximum length
+r.numeric() // Digits only
+r.regex(/pattern/, 'message') // Custom regex
+r.oneOf(['a', 'b', 'c']) // Must be one of the values
 ```
 
-### Числовые правила
+### Numeric rules
 
 ```typescript
-r.minValue(0) // Минимальное значение
-r.maxValue(100) // Максимальное значение
-r.between(0, 100) // Диапазон значений
+r.minValue(0) // Minimum value
+r.maxValue(100) // Maximum value
+r.between(0, 100) // Value range
 ```
 
-### Кросс-полевые правила
+### Cross-field rules
 
 ```typescript
-r.sameAs('password') // Должно совпадать с другим полем
-r.dateAfter('startDate') // Дата должна быть после другого поля
-r.requiredIf('type', 'business') // Обязательно при условии
+r.sameAs('password') // Must match another field
+r.dateAfter('startDate') // Date must be after another field
+r.requiredIf('type', 'business') // Required under a condition
 ```
 
-### Правила файлов
+### File rules
 
 ```typescript
-r.fileRequired() // Выбор файла обязателен
-r.fileSize(5 * 1024 * 1024) // Максимальный размер файла (5MB)
-r.fileType(['.jpg', '.png']) // Разрешенные типы файлов
-r.fileCount(1, 5) // Диапазон количества файлов
+r.fileRequired() // File selection is required
+r.fileSize(5 * 1024 * 1024) // Maximum file size (5MB)
+r.fileType(['.jpg', '.png']) // Allowed file types
+r.fileCount(1, 5) // Range for the number of files
 ```
 
-### Правила массивов
+### Array rules
 
 ```typescript
-r.arrayRequired() // Проверяет, что значение — массив и в нём есть хотя бы один элемент
-r.arrayMinLength(1) // Минимальная длина массива
-r.arrayMaxLength(10) // Максимальная длина массива
+r.arrayRequired() // Checks that the value is an array with at least one element
+r.arrayMinLength(1) // Minimum array length
+r.arrayMaxLength(10) // Maximum array length
 ```
 
-**Примечание**: `arrayRequired()` и `arrayMinLength(1)` работают одинаково, но `arrayRequired()` предоставляет более семантичное название для обязательных массивов.
+**Note**: `arrayRequired()` and `arrayMinLength(1)` work the same way, but `arrayRequired()` provides a more semantic name for required arrays.
 
-### Продвинутые правила
+### Advanced rules
 
 ```typescript
-// Удаленная валидация с debouncing
+// Remote validation with debouncing
 r.remote(
   async username => {
     const response = await fetch(`/api/check-username/${username}`)
     return response.ok
   },
-  'Имя пользователя уже занято',
+  'This username is already taken',
   500
 )
 
-// Кастомная валидация
+// Custom validation
 r.custom((value, allValues) => {
   return value.includes(allValues.domain)
-}, 'Неверный формат')
+}, 'Invalid format')
 ```
 
-## 📂 Загрузка файлов
+## 📂 File uploads
 
-### Конфигурация
+### Configuration
 
 ```typescript
 import { createForm } from '@sakhnovkrg/vue-form-validator'
@@ -471,36 +473,36 @@ const form = createForm(
 )
 ```
 
-### Использование
+### Usage
 
 ```vue
 <template>
-  <!-- Один файл -->
+  <!-- Single file -->
   <input type="file" @change="form.file.avatar.handler" />
   <div v-if="form.file.avatar.files.value.length">
-    Выбран: {{ form.file.avatar.fileInfo.value[0]?.name }}
-    <button @click="form.file.avatar.clear()">Удалить</button>
+    Selected: {{ form.file.avatar.fileInfo.value[0]?.name }}
+    <button @click="form.file.avatar.clear()">Remove</button>
   </div>
 
-  <!-- Множественные файлы -->
+  <!-- Multiple files -->
   <input type="file" multiple @change="form.file.documents.handler" />
   <div v-if="form.file.documents.files.value.length">
-    <p>Файлов: {{ form.file.documents.files.value.length }}</p>
+    <p>Files: {{ form.file.documents.files.value.length }}</p>
     <ul>
       <li v-for="file in form.file.documents.fileInfo.value" :key="file.name">
         {{ file.name }} ({{ file.formattedSize }})
       </li>
     </ul>
-    <button @click="form.file.documents.clear()">Очистить все</button>
+    <button @click="form.file.documents.clear()">Clear all</button>
   </div>
 </template>
 ```
 
-## 📝 Вложенные структуры данных
+## 📝 Nested data structures
 
-Библиотека поддерживает валидацию динамических массивов и вложенных объектов с типобезопасным API.
+The library supports validation of dynamic arrays and nested objects with a type-safe API.
 
-### Динамические массивы
+### Dynamic arrays
 
 ```typescript
 interface Contact {
@@ -523,12 +525,12 @@ const form = createForm(
   })
 )
 
-// Управление массивом
+// Array management
 form.addArrayItem('contacts', { name: '', email: '', role: '' })
 form.removeArrayItem('contacts', index)
 ```
 
-**Пример компонента:**
+**Component example:**
 
 ```vue
 <template>
@@ -541,18 +543,18 @@ form.removeArrayItem('contacts', index)
       {{ form.error(form.arrayPath('contacts', index, 'name')) }}
     </span>
 
-    <button @click="form.removeArrayItem('contacts', index)">Удалить</button>
+    <button @click="form.removeArrayItem('contacts', index)">Remove</button>
   </div>
 
   <button
     @click="form.addArrayItem('contacts', { name: '', email: '', role: '' })"
   >
-    Добавить контакт
+    Add contact
   </button>
 </template>
 ```
 
-### Вложенные объекты
+### Nested objects
 
 ```typescript
 const form = createForm(
@@ -565,21 +567,21 @@ const form = createForm(
     name: r.required(),
     'address.street': r.required(),
     'address.city': r.required(),
-    'address.zipCode': r.required().regex(/^\d{5}$/, 'ZIP: 5 цифр'),
+    'address.zipCode': r.required().regex(/^\d{5}$/, 'ZIP: 5 digits'),
     'profile.bio': r.maxLength(200),
-    'profile.website': r.regex(/^https?:\/\/.+/, 'Начните с http://'),
+    'profile.website': r.regex(/^https?:\/\/.+/, 'Start with http://'),
   })
 )
 ```
 
-**Пример компонента:**
+**Component example:**
 
 ```vue
 <template>
   <fieldset>
-    <legend>Адрес</legend>
+    <legend>Address</legend>
 
-    <!-- Строковые пути — просто и наглядно -->
+    <!-- String paths — simple and clear -->
     <input
       v-model="form.values.address.street"
       @blur="form.touch('address.street')"
@@ -588,7 +590,7 @@ const form = createForm(
       form.error('address.street')
     }}</span>
 
-    <!-- objectPath() — с автодополнением TypeScript -->
+    <!-- objectPath() — with TypeScript autocompletion -->
     <input
       v-model="form.values.address.city"
       @blur="form.touch(form.objectPath('address', 'city'))"
@@ -600,9 +602,9 @@ const form = createForm(
 </template>
 ```
 
-## 🎯 Продвинутые примеры
+## 🎯 Advanced examples
 
-### Условная валидация
+### Conditional validation
 
 ```typescript
 createForm({ type: '', companyName: '' }, (r, define) =>
@@ -613,7 +615,7 @@ createForm({ type: '', companyName: '' }, (r, define) =>
 )
 ```
 
-### Асинхронная проверка имени пользователя
+### Async username check
 
 ```typescript
 createForm({ username: '' }, (r, define) =>
@@ -623,13 +625,13 @@ createForm({ username: '' }, (r, define) =>
       .minLength(3)
       .remote(
         async name => !(await fetch(`/api/users/${name}`)).ok,
-        'Имя пользователя уже занято'
+        'This username is already taken'
       ),
   })
 )
 ```
 
-### Валидация диапазона дат
+### Date range validation
 
 ```typescript
 createForm({ startDate: '', endDate: '' }, (r, define) =>
@@ -640,9 +642,9 @@ createForm({ startDate: '', endDate: '' }, (r, define) =>
 )
 ```
 
-### Универсальная форма для создания и редактирования
+### Universal form for create and edit
 
-Одна и та же форма для создания и редактирования. Ключевой момент — при загрузке данных используйте `reset()`, а не `setValues()`, чтобы обновить baseline и `isDirty` оставался `false`.
+The same form for creating and editing. The key point — when loading data, use `reset()`, not `setValues()`, to update the baseline so `isDirty` stays `false`.
 
 ```vue
 <script setup lang="ts">
@@ -699,7 +701,7 @@ const form = createForm(
   }
 )
 
-// Загрузка данных: reset() обновляет baseline, форма остаётся чистой
+// Loading data: reset() updates the baseline, the form stays clean
 onMounted(async () => {
   if (userId.value) {
     const { name, email } = await fetch(`/api/users/${userId.value}`).then(r =>
@@ -715,7 +717,7 @@ onMounted(async () => {
     <input
       v-model="form.values.name"
       @blur="form.touch('name')"
-      placeholder="Имя"
+      placeholder="Name"
     />
     <span v-if="form.hasError('name')">{{ form.error('name') }}</span>
 
@@ -734,17 +736,17 @@ onMounted(async () => {
     >
       {{
         form.isSubmitting
-          ? 'Сохранение...'
+          ? 'Saving...'
           : isEditMode
-            ? 'Сохранить'
-            : 'Создать'
+            ? 'Save'
+            : 'Create'
       }}
     </button>
   </form>
 </template>
 ```
 
-### Установка ошибок полям
+### Setting errors on fields
 
 ```typescript
 const form = createForm({ username: '', email: '' }, (r, define) =>
@@ -754,26 +756,26 @@ const form = createForm({ username: '', email: '' }, (r, define) =>
   })
 )
 
-// Установить ошибку для одного поля
-form.setErrors({ username: ['Это имя пользователя уже занято'] })
+// Set an error for a single field
+form.setErrors({ username: ['This username is already taken'] })
 
-// Установить ошибки для нескольких полей
+// Set errors for multiple fields
 form.setErrors({
-  username: ['Недопустимые символы в имени'],
-  email: ['Email уже зарегистрирован', 'Неверный формат email'],
+  username: ['Invalid characters in the name'],
+  email: ['Email is already registered', 'Invalid email format'],
 })
 
-// Очистить все ошибки
+// Clear all errors
 form.resetErrors()
 
-// Проверить наличие ошибки
+// Check whether an error exists
 if (form.hasError('username')) {
-  console.log(form.error('username')) // Первая ошибка
-  console.log(form.allErrors('username')) // Все ошибки поля
+  console.log(form.error('username')) // The first error
+  console.log(form.allErrors('username')) // All errors of the field
 }
 ```
 
-Типичный паттерн обработки серверных ошибок — внутри `onSubmit`:
+A typical pattern for handling server-side errors — inside `onSubmit`:
 
 ```typescript
 const form = createForm(
@@ -789,72 +791,72 @@ const form = createForm(
       })
 
       if (!res.ok) {
-        // Сервер возвращает: { fieldErrors: { email: ['Уже существует'] } }
+        // The server returns: { fieldErrors: { email: ['Already exists'] } }
         const { fieldErrors } = await res.json()
         if (fieldErrors) form.setErrors(fieldErrors)
         return
       }
 
-      console.log('Создан:', await res.json())
+      console.log('Created:', await res.json())
     },
   }
 )
 ```
 
-## ⚡ Кэширование валидации
+## ⚡ Validation caching
 
-Библиотека автоматически кэширует результаты валидации для повышения производительности. Кэш очищается автоматически при:
+The library automatically caches validation results to improve performance. The cache is cleared automatically when:
 
-- Изменении значения поля
-- Отметке поля как затронутого (`touch`)
-- Вызове `clearCache(fieldName)`
+- A field value changes
+- A field is marked as touched (`touch`)
+- `clearCache(fieldName)` is called
 
-### Автоматическая очистка кэша
+### Automatic cache clearing
 
-Кэш очищается автоматически в этих методах:
+The cache is cleared automatically in these methods:
 
-- `setValues()` - для всех изменяемых полей
-- `toggleArrayItem()`, `addArrayItem()`, `removeArrayItem()` - для массивов
-- При изменении значений через `v-model`
+- `setValues()` - for all changed fields
+- `toggleArrayItem()`, `addArrayItem()`, `removeArrayItem()` - for arrays
+- When values change via `v-model`
 
-### Когда нужно очищать кэш вручную
+### When to clear the cache manually
 
-В большинстве случаев кэш очищается автоматически. Ручная очистка нужна только при:
+In most cases the cache is cleared automatically. Manual clearing is only needed when:
 
 ```typescript
-// Прямых манипуляциях с реактивными данными (не рекомендуется)
-form.val.tags.push('newItem') // вместо этого используйте addArrayItem
-form.clearCache('tags') // в таких случаях нужна ручная очистка
+// Direct manipulation of reactive data (not recommended)
+form.val.tags.push('newItem') // use addArrayItem instead
+form.clearCache('tags') // manual clearing is needed in such cases
 
-// Крайне редких случаях отладки
-form.clearCache() // очистить весь кэш
+// Extremely rare debugging cases
+form.clearCache() // clear the entire cache
 ```
 
-**Рекомендация**: Используйте встроенные методы (`setValues`, `addArrayItem`, etc.) - они автоматически управляют кэшем.
+**Recommendation**: Use the built-in methods (`setValues`, `addArrayItem`, etc.) - they manage the cache automatically.
 
-**Пример реальной проблемы**: При удалении всех элементов из массива через `splice()` напрямую, кэш может содержать старый результат валидации. Решение - использовать `removeArrayItem()` или очистить кэш вручную.
+**Real-world problem example**: When removing all elements from an array via `splice()` directly, the cache may contain a stale validation result. The solution is to use `removeArrayItem()` or clear the cache manually.
 
-## 🧪 Разработка
+## 🧪 Development
 
-### Запуск playground
+### Running the playground
 
 ```bash
 npm run dev
 ```
 
-Открывает development playground с живыми примерами на `http://localhost:3000`
+Opens the development playground with live examples at `http://localhost:3000`
 
-### Тесты
+### Tests
 
 ```bash
-npm test                  # Запустить тесты
-npm run test -- --coverage # Запустить тесты с покрытием
+npm test                  # Run tests
+npm run test -- --coverage # Run tests with coverage
 ```
 
-### Сборка
+### Build
 
 ```bash
-npm run build             # Собрать библиотеку и типы
-npm run build:playground  # Собрать playground для деплоя
-npm run preview           # Предпросмотр собранного playground
+npm run build             # Build the library and types
+npm run build:playground  # Build the playground for deployment
+npm run preview           # Preview the built playground
 ```
