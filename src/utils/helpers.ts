@@ -28,6 +28,18 @@ export function resolveMessage(
 }
 
 /**
+ * Разрешает реактивный параметр правила в значение
+ *
+ * `toValue()` из Vue сделал бы то же самое, но появился только в 3.3, а пакет
+ * заявляет peer `vue ^3.0.0`. Поэтому тот же приём, что и в `resolveMessage`:
+ * `unref()` разворачивает ref, геттер вызываем сами
+ */
+export function resolveParam<T>(value: MaybeRefOrGetter<T>): T {
+  const resolved = unref(value as any)
+  return typeof resolved === 'function' ? resolved() : resolved
+}
+
+/**
  * Конвертирует FileList, File или File[] в массив File[]
  */
 export function toFileArray(input: FileList | File[] | File | null): File[] {

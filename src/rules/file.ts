@@ -1,7 +1,6 @@
 import type { MaybeRefOrGetter } from 'vue'
-import { toValue } from 'vue'
 import type { Rule } from '../forms/types'
-import { resolveMessage, toFileArray } from '../utils/helpers'
+import { resolveMessage, resolveParam, toFileArray } from '../utils/helpers'
 
 /**
  * Правило обязательного файла
@@ -47,7 +46,7 @@ export function fileSize(
   // Реактивное — на каждой проверке: лимит может зависеть от данных, которые
   // приезжают позже (тариф пользователя, выбранный тип загрузки)
   return files => {
-    const limit = toValue(maxSizeInBytes)
+    const limit = resolveParam(maxSizeInBytes)
 
     if (limit <= 0) {
       throw new Error('Maximum file size must be greater than 0')
@@ -87,7 +86,7 @@ export function fileType(
   return files => {
     if (!files) return null
 
-    const types = toValue(allowedTypes)
+    const types = resolveParam(allowedTypes)
     const allowed = Array.isArray(types) ? types : [types]
 
     const filesToCheck: File[] = []

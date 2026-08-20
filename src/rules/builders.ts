@@ -14,7 +14,7 @@ import { fileRequired, fileSize, fileType, fileCount } from './file'
 import { arrayMinLength, arrayRequired, arrayMaxLength } from './array'
 import { remote, custom, sameAs, dateAfter, requiredIf } from './advanced'
 import type { MaybeRefOrGetter } from 'vue'
-import type { Rule, RuleChain } from '../forms/types'
+import type { NoInferred, Rule, RuleChain } from '../forms/types'
 
 /**
  * Карта всех доступных фабрик правил валидации
@@ -71,13 +71,16 @@ type ChainableRules = {
  * проверять, что правило подходит полю по типу. Поэтому объявляем явно
  */
 type GenericRules = {
-  custom<TValue = any, TValues extends Record<string, any> = Record<string, any>>(
+  custom<
+    TValue = any,
+    TValues extends Record<string, any> = Record<string, any>,
+  >(
     _validator: (
-      _value: TValue,
-      _values: TValues
+      _value: NoInferred<TValue>,
+      _values: NoInferred<TValues>
     ) => boolean | string | Promise<boolean | string>,
     _msg?: MaybeRefOrGetter<string>
-  ): RuleChain<TValue>
+  ): RuleChain<NoInferred<TValue>>
 }
 
 /**

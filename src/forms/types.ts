@@ -12,6 +12,19 @@ export interface RuleMeta {
   fieldPath?: string
 }
 
+/**
+ * Блокирует вывод типа из этой позиции.
+ *
+ * Нужен, чтобы `custom` брал тип **только** из явного параметра
+ * (`r.custom<File | null>(...)`). Без этого TypeScript выводит его из аннотации
+ * в колбэке или из контекста, и привычный вызов `r.custom((v, all) => ...)`
+ * перестаёт подходить полю — то есть ломается уже написанный код.
+ *
+ * Своя реализация вместо встроенного `NoInfer`: тот появился в TypeScript 5.4,
+ * а пакет не должен поднимать планку версии у потребителей
+ */
+export type NoInferred<T> = [T][T extends any ? 0 : never]
+
 export type Rule<T = any> = (
   _value: T,
   _values?: Record<string, any>,
@@ -67,11 +80,11 @@ export interface SimpleRuleChainHelpers {
     TValues extends Record<string, any> = Record<string, any>,
   >(
     _validator: (
-      _value: TValue,
-      _values: TValues
+      _value: NoInferred<TValue>,
+      _values: NoInferred<TValues>
     ) => boolean | string | Promise<boolean | string>,
     _msg?: MaybeRefOrGetter<string>
-  ): RuleChain<TValue>
+  ): RuleChain<NoInferred<TValue>>
   sameAs(_fieldName: string, _msg?: MaybeRefOrGetter<string>): RuleChain<any>
   dateAfter(
     _fieldName: string,

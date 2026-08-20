@@ -1,5 +1,5 @@
 import type { MaybeRefOrGetter } from 'vue'
-import type { Rule, RuleMeta, CrossFieldRule } from '../forms/types'
+import type { NoInferred, Rule, RuleMeta, CrossFieldRule } from '../forms/types'
 import { debounce } from '../utils/debounce'
 import { resolveMessage } from '../utils/helpers'
 import { getNestedValue, resolveWildcard } from '../utils/nested'
@@ -83,13 +83,16 @@ export function remote(
  * @param msg - Сообщение об ошибке (используется только если validator возвращает false)
  * @returns Правило валидации
  */
-export function custom<TValue = any, TValues extends Record<string, any> = Record<string, any>>(
+export function custom<
+  TValue = any,
+  TValues extends Record<string, any> = Record<string, any>,
+>(
   validator: (
-    _value: TValue,
-    _values: TValues
+    _value: NoInferred<TValue>,
+    _values: NoInferred<TValues>
   ) => boolean | string | Promise<boolean | string>,
   msg?: MaybeRefOrGetter<string>
-): Rule<TValue> {
+): Rule<NoInferred<TValue>> {
   const resolve = (result: boolean | string): string | null => {
     if (typeof result === 'string') return result
     if (result === true) return null
