@@ -45,11 +45,11 @@ export interface SimpleRuleChainHelpers {
   ): RuleChain<string | number>
   fileRequired(_msg?: MaybeRefOrGetter<string>): RuleChain<File | File[] | null>
   fileSize(
-    _maxBytes: number,
+    _maxBytes: MaybeRefOrGetter<number>,
     _msg?: MaybeRefOrGetter<string>
   ): RuleChain<File | File[] | null>
   fileType(
-    _accept: string | string[],
+    _accept: MaybeRefOrGetter<string | string[]>,
     _msg?: MaybeRefOrGetter<string>
   ): RuleChain<File | File[] | null>
   fileCount(
@@ -62,13 +62,16 @@ export interface SimpleRuleChainHelpers {
     _msg?: MaybeRefOrGetter<string>,
     _delay?: number
   ): RuleChain<any>
-  custom(
+  custom<
+    TValue = any,
+    TValues extends Record<string, any> = Record<string, any>,
+  >(
     _validator: (
-      _value: any,
-      _values: Record<string, any>
+      _value: TValue,
+      _values: TValues
     ) => boolean | string | Promise<boolean | string>,
     _msg?: MaybeRefOrGetter<string>
-  ): RuleChain<any>
+  ): RuleChain<TValue>
   sameAs(_fieldName: string, _msg?: MaybeRefOrGetter<string>): RuleChain<any>
   dateAfter(
     _fieldName: string,

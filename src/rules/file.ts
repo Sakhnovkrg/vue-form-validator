@@ -1,4 +1,5 @@
 import type { MaybeRefOrGetter } from 'vue'
+import { toValue } from 'vue'
 import type { Rule } from '../forms/types'
 import { resolveMessage, toFileArray } from '../utils/helpers'
 
@@ -34,22 +35,32 @@ export function fileRequired(
  * @returns Правило валидации
  */
 export function fileSize(
-  maxSizeInBytes: number,
+  maxSizeInBytes: MaybeRefOrGetter<number>,
   msg?: MaybeRefOrGetter<string>
 ): Rule<FileList | File | File[] | null> {
-  if (maxSizeInBytes <= 0) {
+  // Статичное значение проверяем сразу: ошибка конфигурации должна падать при
+  // создании правила, а не когда пользователь выберет файл
+  if (typeof maxSizeInBytes === 'number' && maxSizeInBytes <= 0) {
     throw new Error('Maximum file size must be greater than 0')
   }
 
+  // Реактивное — на каждой проверке: лимит может зависеть от данных, которые
+  // приезжают позже (тариф пользователя, выбранный тип загрузки)
   return files => {
+    const limit = toValue(maxSizeInBytes)
+
+    if (limit <= 0) {
+      throw new Error('Maximum file size must be greater than 0')
+    }
+
     if (!files) return null
 
     const filesToCheck = toFileArray(files)
 
-    const oversizedFile = filesToCheck.find(file => file.size > maxSizeInBytes)
+    const oversizedFile = filesToCheck.find(file => file.size > limit)
 
     if (oversizedFile) {
-      const maxSizeMB = (maxSizeInBytes / (1024 * 1024)).toFixed(1)
+      const maxSizeMB = (limit / (1024 * 1024)).toFixed(1)
       const message = resolveMessage(msg)
       return (
         message ||
@@ -68,11 +79,16 @@ export function fileSize(
  * @returns Правило валидации
  */
 export function fileType(
-  allowedTypes: string[],
+  allowedTypes: MaybeRefOrGetter<string | string[]>,
   msg?: MaybeRefOrGetter<string>
 ): Rule<FileList | File | File[] | null> {
+  // Список тоже разрешается на каждой проверке: допустимые расширения часто
+  // зависят от другого поля формы
   return files => {
     if (!files) return null
+
+    const types = toValue(allowedTypes)
+    const allowed = Array.isArray(types) ? types : [types]
 
     const filesToCheck: File[] = []
 
@@ -85,7 +101,7 @@ export function fileType(
     }
 
     const invalidFile = filesToCheck.find(file => {
-      return !allowedTypes.some(type => {
+      return !allowed.some(type => {
         if (type.startsWith('.')) {
           return file.name.toLowerCase().endsWith(type.toLowerCase())
         } else if (type.endsWith('/*')) {
@@ -99,7 +115,7 @@ export function fileType(
     })
 
     if (invalidFile) {
-      const allowedTypesStr = allowedTypes.join(', ')
+      const allowedTypesStr = allowed.join(', ')
       const message = resolveMessage(msg)
       return (
         message ||

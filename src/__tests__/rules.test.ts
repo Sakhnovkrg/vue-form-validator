@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { ref } from 'vue'
 import {
   required,
   minLength,
@@ -192,6 +193,28 @@ describe('fileSize', () => {
   it('throws на <= 0', () => {
     expect(() => fileSize(0)).toThrow()
   })
+
+  it('лимит из ref пересчитывается на каждой проверке', () => {
+    const limit = ref(5)
+    const rule = fileSize(limit)
+    const file = new File(['0123456789'], 'big.txt')
+
+    expect(rule(file)).toBeTruthy()
+
+    limit.value = 1000
+    expect(rule(file)).toBeNull()
+  })
+
+  it('лимит из геттера', () => {
+    let limit = 5
+    const rule = fileSize(() => limit)
+    const file = new File(['0123456789'], 'big.txt')
+
+    expect(rule(file)).toBeTruthy()
+
+    limit = 1000
+    expect(rule(file)).toBeNull()
+  })
 })
 
 describe('fileType', () => {
@@ -201,6 +224,23 @@ describe('fileType', () => {
       rule(new File([''], 'readme.txt', { type: 'text/plain' }))
     ).toBeNull()
     expect(rule(new File([''], 'pic.png', { type: 'image/png' }))).toBeTruthy()
+  })
+
+  it('одиночный тип строкой', () => {
+    const rule = fileType('.txt')
+    expect(rule(new File([''], 'readme.txt'))).toBeNull()
+    expect(rule(new File([''], 'pic.png'))).toBeTruthy()
+  })
+
+  it('список из ref пересчитывается на каждой проверке', () => {
+    const accept = ref<string[]>(['.txt'])
+    const rule = fileType(accept)
+    const file = new File([''], 'preset.vital')
+
+    expect(rule(file)).toBeTruthy()
+
+    accept.value = ['.vital']
+    expect(rule(file)).toBeNull()
   })
 
   it('по MIME-типу', () => {

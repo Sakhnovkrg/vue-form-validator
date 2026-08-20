@@ -13,6 +13,7 @@ import {
 import { fileRequired, fileSize, fileType, fileCount } from './file'
 import { arrayMinLength, arrayRequired, arrayMaxLength } from './array'
 import { remote, custom, sameAs, dateAfter, requiredIf } from './advanced'
+import type { MaybeRefOrGetter } from 'vue'
 import type { Rule, RuleChain } from '../forms/types'
 
 /**
@@ -59,6 +60,24 @@ type ChainableRules = {
   [K in keyof FactoryMap]: (
     ..._args: Parameters<FactoryMap[K]>
   ) => ChainResult<FactoryMap[K]>
+}
+
+/**
+ * Правила, у которых есть собственные параметры типа.
+ *
+ * Мапленный тип выше стирает дженерики: `Parameters`/`ReturnType` разрешают
+ * их в дефолты, и `custom` превращался в `(value: any) => RuleChain<any>`.
+ * Такая цепочка присваивается любому полю, поэтому `define()` переставал
+ * проверять, что правило подходит полю по типу. Поэтому объявляем явно
+ */
+type GenericRules = {
+  custom<TValue = any, TValues extends Record<string, any> = Record<string, any>>(
+    _validator: (
+      _value: TValue,
+      _values: TValues
+    ) => boolean | string | Promise<boolean | string>,
+    _msg?: MaybeRefOrGetter<string>
+  ): RuleChain<TValue>
 }
 
 /**
@@ -154,7 +173,7 @@ function wrapRule<T>(
  * Тип строителя правил
  * Предоставляет все доступные методы создания цепочек правил
  */
-export type RulesBuilder = ChainableRules
+export type RulesBuilder = Omit<ChainableRules, keyof GenericRules> & GenericRules
 
 /**
  * Создает строителя правил валидации

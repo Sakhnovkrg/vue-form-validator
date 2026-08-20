@@ -37,6 +37,17 @@ r.fileType(['.jpg', '.png'])      // Allowed file extensions
 r.fileCount(1, 5)                 // Range for number of files
 ```
 
+The limit and the type list can be **reactive** — a `ref`, a `computed` or a getter.
+The value is resolved at validation time rather than when the rule is created, so
+a rule survives data that arrives later (the user's plan) as well as a dependency
+on another form field:
+
+```typescript
+r.fileSize(() => limits.value.preset) // limit comes with the profile
+r.fileType(allowedExtensions) // ref/computed: depends on the selected kind
+r.fileType('.mp3') // a single type can be passed as a string
+```
+
 ## Array Rules
 
 ```typescript

@@ -83,13 +83,13 @@ export function remote(
  * @param msg - Сообщение об ошибке (используется только если validator возвращает false)
  * @returns Правило валидации
  */
-export function custom(
+export function custom<TValue = any, TValues extends Record<string, any> = Record<string, any>>(
   validator: (
-    _value: any,
-    _values: Record<string, any>
+    _value: TValue,
+    _values: TValues
   ) => boolean | string | Promise<boolean | string>,
   msg?: MaybeRefOrGetter<string>
-): Rule<any> {
+): Rule<TValue> {
   const resolve = (result: boolean | string): string | null => {
     if (typeof result === 'string') return result
     if (result === true) return null
@@ -97,7 +97,7 @@ export function custom(
   }
 
   return (v, formValues) => {
-    const result = validator(v, formValues || {})
+    const result = validator(v as TValue, (formValues || {}) as TValues)
 
     // Если результат - промис, обрабатываем асинхронно
     if (result && typeof (result as any).then === 'function') {

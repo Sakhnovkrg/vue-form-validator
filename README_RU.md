@@ -418,7 +418,13 @@ r.requiredIf('type', 'business') // Обязательно при условии
 r.fileRequired() // Выбор файла обязателен
 r.fileSize(5 * 1024 * 1024) // Максимальный размер файла (5MB)
 r.fileType(['.jpg', '.png']) // Разрешенные типы файлов
+r.fileType('.mp3') // Один тип можно передать строкой
 r.fileCount(1, 5) // Диапазон количества файлов
+
+// Лимит и список типов могут быть реактивными: значение разрешается
+// в момент проверки, а не при создании правила
+r.fileSize(() => limits.value.preset)
+r.fileType(allowedExtensions) // ref или computed
 ```
 
 ### Правила массивов
@@ -449,6 +455,21 @@ r.custom((value, allValues) => {
   return value.includes(allValues.domain)
 }, 'Неверный формат')
 ```
+
+### Типизация `custom`
+
+Правило принимает параметр типа, и тогда значение в колбэке типизировано,
+а `define()` проверит, что правило подходит полю:
+
+```typescript
+createForm({ file: null as File | null }, (r, define) =>
+  define({
+    file: r.custom<File | null>(value => !value || value.size < 5_000_000, 'Слишком большой')
+  })
+)
+```
+
+Без параметра типа значение остаётся `any` — так же, как раньше.
 
 ## 📂 Загрузка файлов
 
