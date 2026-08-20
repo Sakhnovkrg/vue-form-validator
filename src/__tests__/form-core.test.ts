@@ -408,3 +408,68 @@ describe('dispose', () => {
     expect(rule.mock.calls.length).toBe(callsBefore)
   })
 })
+
+describe('validateField({ force })', () => {
+  it('без force возвращает результат из кэша', async () => {
+    let limit = 5
+    const form = setup(() => {
+      const f = createForm({ initialValues: { size: 9 } })
+      f.setRules({ size: [v => (v > limit ? 'too big' : null)] })
+      return f
+    })
+
+    expect(await form.validateField('size')).toEqual(['too big'])
+
+    // Правило смотрит наружу формы, значение поля не менялось — кэш отдаёт старое
+    limit = 15
+    expect(await form.validateField('size')).toEqual(['too big'])
+  })
+
+  it('с force правила прогоняются заново', async () => {
+    let limit = 5
+    const form = setup(() => {
+      const f = createForm({ initialValues: { size: 9 } })
+      f.setRules({ size: [v => (v > limit ? 'too big' : null)] })
+      return f
+    })
+
+    expect(await form.validateField('size')).toEqual(['too big'])
+
+    limit = 15
+    expect(await form.validateField('size', { force: true })).toEqual([])
+    expect(form.hasError('size')).toBe(false)
+  })
+
+  it('force не ломает кэш для последующих вызовов', async () => {
+    const rule = vi.fn((v: string) => (v ? null : 'required'))
+    const form = setup(() => {
+      const f = createForm({ initialValues: { name: 'x' } })
+      f.setRules({ name: [rule] })
+      return f
+    })
+
+    await form.validateField('name')
+    await form.validateField('name', { force: true })
+    const callsAfterForce = rule.mock.calls.length
+
+    await form.validateField('name')
+    expect(rule.mock.calls.length).toBe(callsAfterForce)
+  })
+})
+
+describe('errors не переписываются без изменений', () => {
+  it('повторная проверка сохраняет ссылку на массив ошибок', async () => {
+    const form = setup(() => {
+      const f = createForm({ initialValues: { name: '' } })
+      f.setRules({ name: [required('Обязательно')] })
+      return f
+    })
+
+    await form.validateField('name')
+    const first = form.errors.value.name
+
+    await form.validateField('name', { force: true })
+    // Тот же набор ошибок — значит и тот же массив: подписчики не будят зря
+    expect(form.errors.value.name).toBe(first)
+  })
+})

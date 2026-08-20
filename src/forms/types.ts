@@ -25,6 +25,20 @@ export interface RuleMeta {
  */
 export type NoInferred<T> = [T][T extends any ? 0 : never]
 
+/**
+ * Опции разовой проверки поля
+ */
+export type ValidateFieldOptions = {
+  /**
+   * Прогнать правила заново, не заглядывая в кэш.
+   *
+   * Кэш ключуется значением поля и значениями полей-зависимостей. Если правило
+   * смотрит наружу формы (лимит из профиля, список из справочника), эта
+   * зависимость в ключ не попадает и обычный вызов вернёт прошлый результат
+   */
+  force?: boolean
+}
+
 export type Rule<T = any> = (
   _value: T,
   _values?: Record<string, any>,
@@ -355,8 +369,14 @@ export interface FormInstance<T extends Record<string, any>> {
   // Методы с поддержкой как простых, так и nested путей (перегрузки)
   setRules: (_rules: FormRules<T>) => void
   validateField: {
-    <K extends keyof T>(_name: K): Promise<string[]>
-    <P extends NestedPaths<T>>(_path: P): Promise<string[]>
+    <K extends keyof T>(
+      _name: K,
+      _options?: ValidateFieldOptions
+    ): Promise<string[]>
+    <P extends NestedPaths<T>>(
+      _path: P,
+      _options?: ValidateFieldOptions
+    ): Promise<string[]>
   }
   touch: {
     <K extends keyof T>(_name: K): void

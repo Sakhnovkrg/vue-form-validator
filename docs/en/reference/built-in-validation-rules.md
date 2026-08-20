@@ -48,6 +48,19 @@ r.fileType(allowedExtensions) // ref/computed: depends on the selected kind
 r.fileType('.mp3') // a single type can be passed as a string
 ```
 
+### Re-validating a field
+
+`validateField(name)` uses a cache: the result is keyed by the field value and by the values
+of the fields it depends on. When a rule looks **outside the form** — a limit from the user's
+profile, a list from a dictionary — that dependency is not part of the key, so a plain call
+returns the previous result. Use `force` for this case:
+
+```typescript
+watch(instrumentId, () => {
+  form.validateField('file', { force: true })
+})
+```
+
 ## Array Rules
 
 ```typescript

@@ -112,6 +112,7 @@ export type {
   Rule,
   RuleChain,
   FieldStatus,
+  ValidateFieldOptions,
 } from './types'
 
 // Экспортируем функции создания правил

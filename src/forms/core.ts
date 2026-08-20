@@ -1,5 +1,11 @@
 import { nextTick, effectScope, onScopeDispose, getCurrentScope } from 'vue'
-import type { FormOptions, NestedPaths, FormInstance, FormRules } from './types'
+import type {
+  FormOptions,
+  NestedPaths,
+  FormInstance,
+  FormRules,
+  ValidateFieldOptions,
+} from './types'
 import { FormStateManager } from '../validation/state'
 import { ValidationManager } from '../validation/manager'
 import { createFileHelpers } from '../utils/fileHelpers'
@@ -34,14 +40,19 @@ export function createForm<T extends Record<string, any>>(
       stateManager.setRules(normalized as any)
     }
 
-    async function validateField<K extends keyof T>(name: K): Promise<string[]>
+    async function validateField<K extends keyof T>(
+      name: K,
+      options?: ValidateFieldOptions
+    ): Promise<string[]>
     async function validateField<P extends NestedPaths<T>>(
-      path: P
+      path: P,
+      options?: ValidateFieldOptions
     ): Promise<string[]>
     async function validateField(
-      key: keyof T | NestedPaths<T>
+      key: keyof T | NestedPaths<T>,
+      options?: ValidateFieldOptions
     ): Promise<string[]> {
-      return validationManager.validateField(key as any)
+      return validationManager.validateField(key as any, options)
     }
 
     async function validateForm(): Promise<boolean> {

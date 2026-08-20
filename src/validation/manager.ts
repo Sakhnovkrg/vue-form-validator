@@ -184,11 +184,37 @@ export class ValidationManager<T extends Record<string, any>> {
   }
 
   /**
+   * Записывает ошибки поля, но только если набор действительно изменился
+   *
+   * Vue сравнивает по идентичности, поэтому присваивание нового массива
+   * с тем же содержимым будило всех подписчиков `errors` на каждой проверке —
+   * а поле чаще всего проверяется без изменения результата
+   */
+  private setFieldErrors(fieldKey: string, errors: string[]) {
+    const current = this.errors[fieldKey]
+    const same =
+      current &&
+      current.length === errors.length &&
+      current.every((message, i) => message === errors[i])
+
+    if (same) return
+
+    this.errors[fieldKey] = errors
+  }
+
+  /**
    * Валидирует одно поле с кэшированием (поддерживает вложенные пути)
    * @param name - Имя поля или путь для валидации
+   * @param options - `force: true` пропускает кэш и всегда прогоняет правила.
+   *   Нужен, когда правило зависит от чего-то за пределами формы (лимит из
+   *   профиля, список из другого источника): такие зависимости в ключ кэша
+   *   не попадают, и обычный вызов вернул бы прошлый результат
    * @returns Promise, разрешающийся в массив сообщений об ошибках
    */
-  async validateField<K extends keyof T>(name: K): Promise<string[]> {
+  async validateField<K extends keyof T>(
+    name: K,
+    options?: { force?: boolean }
+  ): Promise<string[]> {
     const fieldKey = name as string
 
     // Отменить предыдущую валидацию для этого поля
@@ -218,7 +244,7 @@ export class ValidationManager<T extends Record<string, any>> {
       : this.values[name]
 
     if (!fieldRules.length) {
-      this.errors[fieldKey] = []
+      this.setFieldErrors(fieldKey, [])
       if (this.abortControllers.get(fieldKey) === abortController) {
         this.abortControllers.delete(fieldKey)
       }
@@ -245,13 +271,13 @@ export class ValidationManager<T extends Record<string, any>> {
       }
     }
 
-    const cached = this.validationCache[fieldKey]
+    const cached = options?.force ? undefined : this.validationCache[fieldKey]
     if (
       cached &&
       deepEqual(cached.value, currentValue) &&
       deepEqual(cached.depsValues ?? {}, depsValues)
     ) {
-      this.errors[fieldKey] = [...cached.errors]
+      this.setFieldErrors(fieldKey, [...cached.errors])
       if (this.abortControllers.get(fieldKey) === abortController) {
         this.abortControllers.delete(fieldKey)
       }
@@ -274,7 +300,7 @@ export class ValidationManager<T extends Record<string, any>> {
 
           if (maybePromise && typeof maybePromise.then === 'function') {
             if (!validatingAsync) {
-              this.errors[fieldKey] = []
+              this.setFieldErrors(fieldKey, [])
               this.isValidating[fieldKey] = true
               validatingAsync = true
             }
@@ -310,7 +336,7 @@ export class ValidationManager<T extends Record<string, any>> {
           ? (deepClone(depsValues) as Record<string, any>)
           : undefined,
       }
-      this.errors[fieldKey] = fieldErrors
+      this.setFieldErrors(fieldKey, fieldErrors)
       return fieldErrors
     } finally {
       // Только если в Map всё ещё наш controller — значит нас не заменила новая валидация

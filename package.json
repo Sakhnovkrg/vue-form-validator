@@ -1,6 +1,6 @@
 {
   "name": "@sakhnovkrg/vue-form-validator",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "description": "Type-safe Vue 3 form validation library",
   "keywords": [
